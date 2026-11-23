@@ -30,27 +30,20 @@ structure PullRequest where
   /-- CI結果。証拠として扱う。 -/
   ciResults : List Evidence
 
-/-- 変更前の成果物 -/
-def PullRequest.base (p : PullRequest) : Artifact :=
-  { requirements := p.body.scope.requirements.before
-    behaviors := p.body.scope.behaviors.before
-    implementations := p.diff.before
-    rules := p.body.scope.rules.before }
+/-- 適用可能。実装の変更前が、適用先の実装と一致する。 -/
+def PullRequest.Applicable (p : PullRequest) (a : Artifact) : Prop :=
+  p.diff.before = a.implementations
 
-/-- 変更後の成果物 -/
-def PullRequest.result (p : PullRequest) : Artifact :=
-  { requirements := p.body.scope.requirements.after
-    behaviors := p.body.scope.behaviors.after
+/-- 変更後の成果物。適用先 `a` に、範囲と実装の変更を当てたもの。 -/
+def PullRequest.result (p : PullRequest) (a : Artifact) : Artifact :=
+  { requirements := p.body.scope.requirements a.requirements
+    behaviors := p.body.scope.behaviors a.behaviors
     implementations := p.diff.after
-    rules := p.body.scope.rules.after }
+    rules := p.body.scope.rules a.rules }
 
 /-- 成果物の差分 -/
-def PullRequest.artifactDiff (p : PullRequest) : Artifact.Diff :=
-  ⟨p.base, p.result⟩
-
-/-- 適用可能 -/
-def PullRequest.Applicable (p : PullRequest) (a : Artifact) : Prop :=
-  p.base = a
+def PullRequest.artifactDiff (p : PullRequest) (a : Artifact) : Artifact.Diff :=
+  ⟨a, p.result a⟩
 
 /-- 範囲を変えた。理由だけの違いは含めない。 -/
 def PullRequest.Rescoped (p : PullRequest) : Prop :=
@@ -59,19 +52,19 @@ def PullRequest.Rescoped (p : PullRequest) : Prop :=
     p.body.scope.rules ≠ p.issue.changeRequest.rules
 
 /-- 届ける。範囲を実現する。 -/
-def PullRequest.Delivers (p : PullRequest) : Prop :=
-  p.result.Correct ∧ p.result.Conforms
+def PullRequest.Delivers (p : PullRequest) (a : Artifact) : Prop :=
+  (p.result a).Correct ∧ (p.result a).Conforms
 
 /-- 解決する。Issueの変更要件を実現する。 -/
-def PullRequest.Resolves (p : PullRequest) : Prop :=
-  p.result.requirements = p.issue.changeRequest.requirements.after ∧
-    p.result.behaviors = p.issue.changeRequest.behaviors.after ∧
-    p.result.rules = p.issue.changeRequest.rules.after ∧
-    p.result.Correct ∧ p.result.Conforms
+def PullRequest.Resolves (p : PullRequest) (a : Artifact) : Prop :=
+  (p.result a).requirements = p.issue.changeRequest.requirements a.requirements ∧
+    (p.result a).behaviors = p.issue.changeRequest.behaviors a.behaviors ∧
+    (p.result a).rules = p.issue.changeRequest.rules a.rules ∧
+    (p.result a).Correct ∧ (p.result a).Conforms
 
 /-- 範囲を変えていなければ、届けることと解決することは一致する。 -/
-theorem PullRequest.delivers_iff_resolves (p : PullRequest) (h : ¬p.Rescoped) :
-    p.Delivers ↔ p.Resolves := by
+theorem PullRequest.delivers_iff_resolves (p : PullRequest) (a : Artifact) (h : ¬p.Rescoped) :
+    p.Delivers a ↔ p.Resolves a := by
   obtain ⟨hr, h⟩ := not_or.mp h
   obtain ⟨hb, hu⟩ := not_or.mp h
   have hr := Classical.not_not.mp hr
@@ -80,13 +73,13 @@ theorem PullRequest.delivers_iff_resolves (p : PullRequest) (h : ¬p.Rescoped) :
   simp [PullRequest.Delivers, PullRequest.Resolves, PullRequest.result, hr, hb, hu]
 
 /-- 検証を通る -/
-def PullRequest.Verified (p : PullRequest) : Prop :=
-  p.body.verification.verified p.artifactDiff
+def PullRequest.Verified (p : PullRequest) (a : Artifact) : Prop :=
+  p.body.verification.verified (p.artifactDiff a)
 
 /-- 健全な検証を通るPRは、範囲を届ける。 -/
-theorem PullRequest.delivers_of_verified (p : PullRequest)
-    (hs : p.body.verification.Sound) (hv : p.Verified) : p.Delivers :=
-  hs p.artifactDiff hv
+theorem PullRequest.delivers_of_verified (p : PullRequest) (a : Artifact)
+    (hs : p.body.verification.Sound) (hv : p.Verified a) : p.Delivers a :=
+  hs (p.artifactDiff a) hv
 
 /-- 承認。人間がPRを受け入れる判断。理由と見積もりの妥当さ、要求の価値はここで判断する。 -/
 opaque PullRequest.Approval : PullRequest → Type
