@@ -20,13 +20,13 @@ structure Repository where
 /-- 成果物 `a` に、PRを順にマージした後の成果物。 -/
 def Artifact.mergeAll (a : Artifact) : List PullRequest.Approved → Artifact
   | [] => a
-  | p :: ps => (p.1.result a).mergeAll ps
+  | p :: ps => p.1.result.mergeAll ps
 
 /-- 履歴が一貫している。どのPRも、その時点の成果物に適用可能である。
-正しさは求めない。逸脱があれば理由を示し、受け入れるかは承認で判断する。 -/
+正しさは求めない。逸脱の理由はPRが必ず示し、受け入れるかは承認で判断する。 -/
 def Artifact.Mergeable (a : Artifact) : List PullRequest.Approved → Prop
   | [] => True
-  | p :: ps => p.1.Applicable a ∧ (p.1.result a).Mergeable ps
+  | p :: ps => p.1.Applicable a ∧ p.1.result.Mergeable ps
 
 /-- 今の成果物 -/
 def Repository.artifact (s : Repository) : Artifact :=
@@ -43,7 +43,7 @@ def Repository.Merged (s : Repository) (p : PullRequest) : Prop :=
 /-- 成果物 `a` からPRを順にマージする間に、Issue `i` を解決するPRがある。 -/
 def Artifact.ResolvesAlong (a : Artifact) (i : Issue) : List PullRequest.Approved → Prop
   | [] => False
-  | p :: ps => (p.1.issue = i ∧ p.1.Resolves a) ∨ (p.1.result a).ResolvesAlong i ps
+  | p :: ps => (p.1.issue = i ∧ p.1.Applicable a ∧ p.1.Resolves) ∨ p.1.result.ResolvesAlong i ps
 
 /-- 解決された。マージの履歴の中に、その時点の成果物でIssueを解決したPRがある。 -/
 def Repository.Resolved (s : Repository) (i : Issue) : Prop :=
