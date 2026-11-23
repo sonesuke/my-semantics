@@ -53,16 +53,17 @@ structure Artifact.Modification where
 /-- 証拠。中身は明かさない。 -/
 opaque Evidence : Type
 
-/-- 検証の裏付け。証拠か、証拠がなくてよい理由のどちらか。 -/
-inductive Artifact.Verification.Support where
-  | evidence (e : Evidence)
-  /-- 検証の残し。理由を必須にするので、理由のない検証の残しは表せない。 -/
-  | waived (j : Justification)
-
-/-- 検証 -/
+/-- 検証。変更要件が本来の基準なのに対し、実際に確かめられる基準。
+複数あるのは検証ではなく、一つの検証を支える証拠である。 -/
 structure Artifact.Verification where
-  /-- 確かめる命題 -/
-  verify : Artifact → Prop
-  support : Artifact.Verification.Support
+  /-- `verified d` は「差分 `d` が検証を通る」。 -/
+  verified : Artifact.Diff → Prop
+  evidences : List Evidence
+  /-- なぜこの検証で十分か。確かめていない部分があれば、なぜ確かめなくてよいか -/
+  justification : Justification
+
+/-- 健全。検証を通る差分は、変更要件に受け入れられる。 -/
+def Artifact.Verification.Sound (v : Artifact.Verification) (m : Artifact.Modification) : Prop :=
+  ∀ d, v.verified d → m.admits d
 
 end Knowledge.Development
