@@ -1,4 +1,4 @@
-import Knowledge.Documentation.Layout.Model
+import Knowledge.Documentation.Document.Model
 
 /-! # 提案書 -/
 
