@@ -2,8 +2,8 @@ import Knowledge.Development.Repository.Model
 
 /-! # 費用のモデル
 
-リポジトリの費用とレビューの費用を区別する。リポジトリの費用は状態で決まり、
-PRの構成では変わらないので、レビューの費用には吸収しない。 -/
+ルールと実装の費用と、レビューの費用を区別する。前者は成果物で決まり、読まれるたびにかかる。
+後者はPRの構成で決まり、一度だけかかる。 -/
 
 namespace Knowledge.Development
 
@@ -38,8 +38,36 @@ def Artifact.MinimalImplementation (implementationCost : ImplementationCost) (a 
       Implementation.cost implementationCost a.rules a.implementations ≤
         Implementation.cost implementationCost b.rules b.implementations
 
-/-- レビューの費用。`reviewCost s p` は「リポジトリ状態 `s` を知るレビュアーが、PR `p` を理解し
-受け入れを判断する費用」。PRの分割や提示の順序で変わる。 -/
-abbrev ReviewCost := Repository → PullRequest → Nat
+/-- レビューの費用。PRの分割や提示の順序で変わる。 -/
+structure ReviewCost where
+  /-- `cost s p` は「リポジトリ状態 `s` を知るレビュアーが、PR `p` を理解し受け入れを判断する費用」。 -/
+  cost : Repository → PullRequest → Nat
+  /-- 空のPRはPRとして成立しないので、費用は常に正。 -/
+  positive : ∀ s p, 0 < cost s p
+
+/-- Issueどおりの成果物。Issueの変更要件の変更後の要求・振る舞い・ルールと、実装 `is` の組。 -/
+def PullRequest.issueArtifact (p : PullRequest) (is : List Implementation) : Artifact :=
+  { requirements := p.issue.changeRequest.requirements.after
+    behaviors := p.issue.changeRequest.behaviors.after
+    implementations := is
+    rules := p.issue.changeRequest.rules.after }
+
+/-- ROI。PRが生む価値を、レビューの費用で割ったもの。
+
+分子は、PRが届ける価値 1 に、Issueどおりの成果物の費用とPRの結果の費用の差を、読まれる回数 `reads`
+の分だけ足したもの。価値の項があるので、素直に実装しただけのPRも分母だけで決まらない。
+価値を 1 に固定するのは、動かせると差の項を好きなだけ希薄にできるため。費用はPR一つの価値を単位に測ることになる。
+差は、範囲を変えて費用が減れば正に、実装に無駄があれば負になる。
+Issueどおりの成果物は、実装 `baseline` が最小（`MinimalImplementation`）であるものを想定する。
+PRはIssueどおりの実装を持たないので、最も安い実装を基準にする。
+
+費用だけでは要求をすべて消す変更が常に得になるので、範囲を変えたPRでは、
+要求の価値の判断を範囲の理由の受け入れに任せる。 -/
+def PullRequest.roi (ruleCost : RuleCost) (implementationCost : ImplementationCost)
+    (reviewCost : ReviewCost) (reads : Nat) (baseline : List Implementation)
+    (s : Repository) (p : PullRequest) : Rat :=
+  let baselineCost := (p.issueArtifact baseline).ruleImplementationCost ruleCost implementationCost
+  let resultCost := p.result.ruleImplementationCost ruleCost implementationCost
+  ((1 : Int) + reads * ((baselineCost : Int) - resultCost) : Int) / (reviewCost.cost s p : Rat)
 
 end Knowledge.Development
