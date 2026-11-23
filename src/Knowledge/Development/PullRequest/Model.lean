@@ -14,9 +14,12 @@ structure PullRequest.Body where
   scope : Artifact.ChangeRequest
   /-- 変更後が正しく、ルールに適合することの検証 -/
   verification : Artifact.Verification
+  /-- 見積もり。Issueどおりに作った場合の、ルールと実装の費用を認知コストで測ったもの。
+  PRはIssueどおりの実装を持たないので、提案者が見積もり、妥当であることを理由で示し、承認で受け入れられる。 -/
+  estimate : Nat
 
-/-- 要約。本文に依存する型なので、そのPRの本文の要約でしかあり得ない。 -/
-structure PullRequest.Summary (body : PullRequest.Body) where
+/-- 要約。本文に依存する型なので、そのPRの本文の要約でしかあり得ない。中身は明かさない。 -/
+opaque PullRequest.Summary : PullRequest.Body → Type
 
 /-! ## PR -/
 
@@ -89,6 +92,13 @@ def PullRequest.Verified (p : PullRequest) : Prop :=
 theorem PullRequest.delivers_of_verified (p : PullRequest)
     (hs : p.body.verification.Sound) (hv : p.Verified) : p.Delivers :=
   hs p.artifactDiff hv
+
+/-- 承認（Approve）。人間がPRを受け入れる判断。範囲とその理由、見積もり、検証の理由を受け入れることを含む。
+要求の価値の判断もここで行う。PRに依存する型なので、そのPRの承認でしかあり得ない。中身は明かさない。 -/
+opaque PullRequest.Approval : PullRequest → Type
+
+/-- 承認されたPR。PRとその承認の組。 -/
+abbrev PullRequest.Approved := (p : PullRequest) × PullRequest.Approval p
 
 /-- 証拠。本文の検証の証拠とCI結果を合わせたもの。 -/
 def PullRequest.evidences (p : PullRequest) : List Evidence :=
