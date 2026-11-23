@@ -18,10 +18,15 @@ def PullRequest.DefaultMinimalImplementation (c : CognitiveCost) (p : PullReques
 def PullRequest.OverEstimate (c : CognitiveCost) (p : PullRequest) : Prop :=
   p.body.estimate < p.result.ruleImplementationCost c
 
+/-- 範囲を変えた理由。変えていなければない。 -/
+def PullRequest.Scope.justifications : PullRequest.Scope → List Justification
+  | .asIssued => []
+  | .rescoped _ j => [j]
+
 open Classical in
 /-- 逸脱。既定路線との差のうち、承認で理由を読まなければならないもの。 -/
 noncomputable def PullRequest.deviations (c : CognitiveCost) (p : PullRequest) : List Justification :=
-  (if p.Rescoped then [p.body.scope.justification] else []) ++
+  p.body.scope.justifications ++
     p.body.verification.uncovered ++
     (if p.OverEstimate c then [p.body.implementationJustification] else [])
 

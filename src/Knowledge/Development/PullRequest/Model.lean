@@ -23,23 +23,36 @@ structure PullRequest.CI where
   results : List Evidence
   observed : ∀ e ∈ results, e.Observed
 
+/-! ## 範囲 -/
+
+/-- 範囲。このPRが引き受ける変更要件。Issueのとおりか、変えたか。
+変えたなら、変えた変更要件と、なぜ変えたかの理由を持つ。変更要件の理由は「なぜこの変更をするか」のままにする。 -/
+inductive PullRequest.Scope where
+  | asIssued
+  | rescoped (changeRequest : Artifact.ChangeRequest) (j : Justification)
+
+/-- 範囲の変更要件 -/
+def PullRequest.Scope.changeRequest (issue : Issue) : PullRequest.Scope → Artifact.ChangeRequest
+  | .asIssued => issue.changeRequest
+  | .rescoped cr _ => cr
+
 /-! ## 本文 -/
 
-/-- 本文。作った時点の成果物 `base` と変更後の実装 `is` に依存し、その変更の検証しか持てない。
+/-- 本文。Issue、作った時点の成果物 `base`、変更後の実装 `is` に依存し、その変更の検証しか持てない。
 CI結果 `ci` にも依存し、検証ではCI結果を書き写さずに証拠として使える。 -/
-structure PullRequest.Body (base : Artifact) (is : List Implementation) (ci : PullRequest.CI) where
-  /-- 範囲。このPRが引き受ける変更要件。Issueの変更要件を変えたものでもよい。 -/
-  scope : Artifact.ChangeRequest
+structure PullRequest.Body (issue : Issue) (base : Artifact) (is : List Implementation)
+    (ci : PullRequest.CI) where
+  scope : PullRequest.Scope
   /-- 検証 -/
-  verification : Verification ⟨base, scope.apply base is⟩ ci.results
+  verification : Verification ⟨base, (scope.changeRequest issue).apply base is⟩ ci.results
   /-- 見積もり。既定路線のルールと実装の費用。既定路線の実装はないので、提案者が見積もる。 -/
   estimate : Nat
   /-- 実装の理由。実装の費用が見積もりを超えるとき、なぜ超えてよいか。 -/
   implementationJustification : Justification
 
 /-- 要約。本文に依存させ、その本文の要約でしかあり得ないようにする。 -/
-opaque PullRequest.Summary {base : Artifact} {is : List Implementation} {ci : PullRequest.CI} :
-  PullRequest.Body base is ci → Type
+opaque PullRequest.Summary {issue : Issue} {base : Artifact} {is : List Implementation}
+  {ci : PullRequest.CI} : PullRequest.Body issue base is ci → Type
 
 /-! ## PR -/
 
@@ -51,12 +64,16 @@ structure PullRequest where
   /-- 変更後の実装 -/
   implementations : List Implementation
   ci : PullRequest.CI
-  body : PullRequest.Body base implementations ci
+  body : PullRequest.Body issue base implementations ci
   title : PullRequest.Summary body
+
+/-- 引き受けた変更要件 -/
+def PullRequest.changeRequest (p : PullRequest) : Artifact.ChangeRequest :=
+  p.body.scope.changeRequest p.issue
 
 /-- 変更後の成果物 -/
 def PullRequest.result (p : PullRequest) : Artifact :=
-  p.body.scope.apply p.base p.implementations
+  p.changeRequest.apply p.base p.implementations
 
 /-- 成果物の差分 -/
 def PullRequest.artifactDiff (p : PullRequest) : Artifact.Diff :=
@@ -66,11 +83,9 @@ def PullRequest.artifactDiff (p : PullRequest) : Artifact.Diff :=
 def PullRequest.Applicable (p : PullRequest) (a : Artifact) : Prop :=
   p.base = a
 
-/-- 範囲を変えた。理由だけの違いは含めない。 -/
+/-- 範囲を変えた -/
 def PullRequest.Rescoped (p : PullRequest) : Prop :=
-  p.body.scope.requirements ≠ p.issue.changeRequest.requirements ∨
-    p.body.scope.behaviors ≠ p.issue.changeRequest.behaviors ∨
-    p.body.scope.rules ≠ p.issue.changeRequest.rules
+  p.body.scope ≠ .asIssued
 
 /-- 届ける。範囲を実現する。 -/
 def PullRequest.Delivers (p : PullRequest) : Prop :=
@@ -86,13 +101,9 @@ def PullRequest.Resolves (p : PullRequest) : Prop :=
 /-- 範囲を変えていなければ、届けることと解決することは一致する。 -/
 theorem PullRequest.delivers_iff_resolves (p : PullRequest) (h : ¬p.Rescoped) :
     p.Delivers ↔ p.Resolves := by
-  obtain ⟨hr, h⟩ := not_or.mp h
-  obtain ⟨hb, hu⟩ := not_or.mp h
-  have hr := Classical.not_not.mp hr
-  have hb := Classical.not_not.mp hb
-  have hu := Classical.not_not.mp hu
-  simp [PullRequest.Delivers, PullRequest.Resolves, PullRequest.result,
-    Artifact.ChangeRequest.apply, hr, hb, hu]
+  have hs : p.body.scope = .asIssued := Classical.not_not.mp h
+  simp [PullRequest.Delivers, PullRequest.Resolves, PullRequest.result, PullRequest.changeRequest,
+    Artifact.ChangeRequest.apply, PullRequest.Scope.changeRequest, hs]
 
 /-- 承認。人間がPRを受け入れる判断。正しさ、理由と見積もりの妥当さ、要求の価値はここで判断する。 -/
 opaque PullRequest.Approval : PullRequest → Type

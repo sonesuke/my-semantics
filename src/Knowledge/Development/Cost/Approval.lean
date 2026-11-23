@@ -23,11 +23,12 @@ theorem PullRequest.approvalCost_of_deviation (c : CognitiveCost) (s : Repositor
       · exact Nat.le_trans (ih hx) (Nat.le_add_left _ _)
   exact Nat.add_le_add_left (key _ h) _
 
-/-- 範囲を変えたPRは、承認の費用に範囲の理由を読む費用が加わる。 -/
+/-- 範囲を変えたPRは、承認の費用に範囲を変えた理由を読む費用が加わる。 -/
 theorem PullRequest.approvalCost_of_rescoped (c : CognitiveCost) (s : Repository) (p : PullRequest)
-    (h : p.Rescoped) :
-    c.reading s p + c.justification p.body.scope.justification ≤ p.approvalCost c s :=
-  p.approvalCost_of_deviation c s _ (by simp [PullRequest.deviations, h])
+    (cr : Artifact.ChangeRequest) (j : Justification) (h : p.body.scope = .rescoped cr j) :
+    c.reading s p + c.justification j ≤ p.approvalCost c s :=
+  p.approvalCost_of_deviation c s _
+    (by simp [PullRequest.deviations, PullRequest.Scope.justifications, h])
 
 /-- 確かめない部分があるPRは、承認の費用にその理由を読む費用が加わる。 -/
 theorem PullRequest.approvalCost_of_uncovered (c : CognitiveCost) (s : Repository) (p : PullRequest)
