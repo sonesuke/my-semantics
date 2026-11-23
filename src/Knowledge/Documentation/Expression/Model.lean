@@ -1,3 +1,5 @@
+import Knowledge.Documentation.Layout.Model
+
 /-! # 文章の読みやすさのモデル
 
 読みやすい表現は、読者の知識・語彙を足場に、目的に必要な理解へ少ない負担で進める表現である。
@@ -8,14 +10,16 @@ namespace Knowledge.Documentation
 /-- 状況。説明対象について考えられる状況。 -/
 opaque Situation : Type
 
-/-- 表現。言葉遣い、文の組み立て、説明の順序、具体例、図表、配置を含む。 -/
-opaque Expression : Type
+/-- 表現。文書の種類と、その種類の文書。レイアウト（節の並び）と文体（各節の言葉）からなる。 -/
+structure Expression where
+  genre : Genre
+  document : Document genre
 
 /-- 読者の状態。語と概念の対応、保持する命題や事例、説明・判断・実行の能力。誤解を含む状態も扱う。 -/
 opaque ReaderState : Type
 
-/-- 課題。読者の目的を表す。説明の再生に加え、新しい事例の判断や反例の識別を含む。 -/
-opaque Task : Type
+/-- 目的。読後にできるようになってほしいこと。説明の再生に加え、新しい事例の判断や反例の識別を含む。 -/
+opaque Purpose : Type
 
 /-- 操作。読む、調べる、前に戻る、推論するなど。 -/
 opaque Operation : Type
@@ -88,11 +92,11 @@ structure Premise where
   /-- 目的に必要な情報を取り出す。すべての意味を保つなら、状況をそのまま返す。 -/
   need : Situation → Need
   /-- 読者の目的。有限で空でない。 -/
-  tasks : List Task
-  tasks_nonempty : tasks ≠ []
-  /-- `sufficient K g` は「状態 `K` の読者が課題 `g` に十分に応答できる」。
+  purposes : List Purpose
+  purposes_nonempty : purposes ≠ []
+  /-- `sufficient K g` は「状態 `K` の読者が目的 `g` について十分に応答できる」。
   情報不足なら「判断できない」も十分な応答になり得る。 -/
-  sufficient : ReaderState → Task → Prop
+  sufficient : ReaderState → Purpose → Prop
   /-- 読む前の読者の状態 -/
   initial : ReaderState
   /-- `step e K o K'` は「表現 `e` を閲覧条件のもとで読み、操作 `o` で状態 `K` から `K'` へ進める」。
@@ -117,9 +121,9 @@ def Faithful (e : Expression) : Prop :=
   (∃ ω, P.meaning e ω) ∧
     ∀ z, (∃ ω, P.meaning e ω ∧ P.need ω = z) ↔ (∃ ω, P.content ω ∧ P.need ω = z)
 
-/-- 理解している。目的のすべての課題に十分に応答できる。判定は目的の範囲に限る。 -/
+/-- 理解している。すべての目的について十分に応答できる。判定は目的の範囲に限る。 -/
 def Understands (K : ReaderState) : Prop :=
-  ∀ g ∈ P.tasks, P.sufficient K g
+  ∀ g ∈ P.purposes, P.sufficient K g
 
 /-! ## 過程 -/
 
