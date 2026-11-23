@@ -1,24 +1,31 @@
-/-!
-# Artifactのモデル
-
-`knowledge/development/artifact/model.md` を形式化する。
--/
+/-! # 成果物のモデル -/
 
 namespace Knowledge.Development
 
-structure Requirements where
+/-- 実装。中身は明かさない。 -/
+opaque Implementation : Type
 
+/-- 振る舞い。成果物が何をするか。 -/
 structure Behavior where
+  /-- `RealizedBy i` は「実装 `i` が振る舞いを実現する」。 -/
+  RealizedBy : Implementation → Prop
 
-structure Implementation where
+/-- 要求。振る舞いが満たすべき条件。 -/
+structure Requirements where
+  /-- `SatisfiedBy b` は「振る舞い `b` が要求を満たす」。 -/
+  SatisfiedBy : Behavior → Prop
 
-/-- 評価対象の成果物 `(𝓡, 𝓑, 𝓘)`。 -/
+/-- 成果物 -/
 structure Artifact where
   requirements : Requirements
   behavior : Behavior
   implementation : Implementation
 
-/-- 二つのArtifactの差分 `(A₀, A₁)`。 -/
+/-- 正しい。振る舞いが要求を満たし、実装が振る舞いを実現する。 -/
+def Artifact.Correct (a : Artifact) : Prop :=
+  a.requirements.SatisfiedBy a.behavior ∧ a.behavior.RealizedBy a.implementation
+
+/-- 差分。操作ではなく前後の組にするのは、どの成果物に対する差分かを自分で示すため。 -/
 structure Artifact.Diff where
   before : Artifact
   after : Artifact

@@ -4,8 +4,11 @@
 //   3. index.md has no frontmatter, except `okf_version` at the bundle root.
 //   4. log.md has no frontmatter and its date headings are newest-first.
 // Repository rules (in addition to OKF conformance):
-//   5. Internal links are file-relative and point to existing bundle files.
-//   6. Every Markdown document is reachable from the root index.md.
+//   5. Internal links are file-relative and point to existing files inside the
+//      project root (--project, default: the bundle root).
+//   6. A link whose text is inline code and whose target is a .lean file names
+//      a declaration or structure field of that file.
+//   7. Every Markdown document is reachable from the root index.md.
 
 import { readFile, readdir, stat } from "node:fs/promises";
 import path from "node:path";
@@ -85,9 +88,41 @@ function check(file: string, text: string, root: string): string[] {
 type MarkdownNode = {
   type: string;
   url?: string;
+  value?: string;
   identifier?: string;
   children?: MarkdownNode[];
 };
+
+// Fully qualified names of the declarations and structure fields of a Lean file.
+function leanNames(source: string): string[] {
+  const names: string[] = [];
+  const namespaces: string[] = [];
+  let structure: string | null = null;
+  const code = source.replace(/\/-[\s\S]*?-\//g, "").replace(/--.*$/gm, "");
+  for (const line of code.split("\n")) {
+    const ns = /^namespace\s+(\S+)/.exec(line);
+    const decl =
+      /^(?:@\[[^\]]*\]\s*)?(?:(?:private|protected|noncomputable)\s+)*(structure|inductive|class|def|abbrev|theorem|axiom|opaque)\s+([^\s({:[]+)/.exec(
+        line,
+      );
+    const field = /^\s+([\w']+)\s*:/.exec(line);
+    if (ns) {
+      namespaces.push(ns[1]);
+    } else if (/^end(\s|$)/.test(line)) {
+      namespaces.pop();
+      structure = null;
+    } else if (decl) {
+      const name = [...namespaces, decl[2]].join(".");
+      names.push(name);
+      structure = decl[1] === "structure" || decl[1] === "class" ? name : null;
+    } else if (field && structure) {
+      names.push(`${structure}.${field[1]}`);
+    } else if (/^\S/.test(line)) {
+      structure = null;
+    }
+  }
+  return names;
+}
 
 function* nodes(node: MarkdownNode): Generator<MarkdownNode> {
   yield node;
@@ -98,6 +133,7 @@ async function checkLinks(
   file: string,
   text: string,
   root: string,
+  project: string,
 ): Promise<{ errors: string[]; targets: string[] }> {
   const errors: string[] = [];
   const targets: string[] = [];
@@ -130,34 +166,50 @@ async function checkLinks(
       errors.push(`invalid internal link encoding: ${url}`);
       continue;
     }
-    const relative = path.relative(root, target);
+    const relative = path.relative(project, target);
     if (relative === ".." || relative.startsWith(`..${path.sep}`)) {
-      errors.push(`internal link leaves bundle: ${url}`);
+      errors.push(`internal link leaves project: ${url}`);
       continue;
     }
     const exists = await stat(target).then(
       (info) => info.isFile(),
       () => false,
     );
+    const code = node.children?.length === 1 ? node.children[0] : undefined;
     if (!exists) {
       errors.push(`internal link target is not a file: ${url}`);
-    } else if (node.type === "link" || node.type === "linkReference") {
+    } else if (target.endsWith(".lean") && code?.type === "inlineCode") {
+      const name = code.value ?? "";
+      const found = leanNames(await readFile(target, "utf8")).some(
+        (n) => n === name || n.endsWith(`.${name}`),
+      );
+      if (!found) errors.push(`Lean name not found in ${url}: ${name}`);
+    } else if (
+      (node.type === "link" || node.type === "linkReference") &&
+      target.endsWith(".md") &&
+      !path.relative(root, target).startsWith("..")
+    ) {
       targets.push(target);
     }
   }
   return { errors, targets };
 }
 
-const roots = process.argv.slice(2);
+const args = process.argv.slice(2);
+const projectFlag = args.indexOf("--project");
+const projectArg =
+  projectFlag === -1 ? undefined : args.splice(projectFlag, 2)[1];
+const roots = args;
 if (roots.length === 0) roots.push("knowledge");
 
 let failures = 0;
 for (const root of roots) {
   const bundleRoot = path.resolve(root);
+  const project = path.resolve(projectArg ?? root);
   const graph = new Map<string, string[]>();
   for await (const file of walk(bundleRoot)) {
     const text = await readFile(file, "utf8");
-    const links = await checkLinks(file, text, bundleRoot);
+    const links = await checkLinks(file, text, bundleRoot, project);
     graph.set(file, links.targets);
     const errors = [...check(file, text, bundleRoot), ...links.errors];
     for (const err of errors) console.error(`${file}: ${err}`);

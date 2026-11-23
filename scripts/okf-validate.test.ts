@@ -9,7 +9,7 @@ import { fileURLToPath } from "node:url";
 const validator = fileURLToPath(new URL("./okf-validate.ts", import.meta.url));
 const concept = (body: string) => `---\ntype: concept\n---\n\n${body}\n`;
 
-function validate(files: Record<string, string>) {
+function validate(files: Record<string, string>, args: string[] = []) {
   const root = mkdtempSync(path.join(tmpdir(), "okf-validate-"));
   try {
     for (const [name, content] of Object.entries(files)) {
@@ -17,7 +17,9 @@ function validate(files: Record<string, string>) {
       mkdirSync(path.dirname(file), { recursive: true });
       writeFileSync(file, content);
     }
-    const result = spawnSync(process.execPath, [validator, root], {
+    const bundle = args.length ? path.join(root, "knowledge") : root;
+    const extra = args.map((a) => (a === "<root>" ? root : a));
+    const result = spawnSync(process.execPath, [validator, bundle, ...extra], {
       encoding: "utf8",
     });
     assert.ifError(result.error);
@@ -103,7 +105,7 @@ test("uses the first definition when reference labels are repeated", () => {
 test("rejects links outside the bundle, including encoded traversal", () => {
   const result = validate({ "index.md": "[Outside](./%2e%2e/outside.md)" });
   assert.equal(result.status, 1, result.output);
-  assert.match(result.output, /internal link leaves bundle/);
+  assert.match(result.output, /internal link leaves project/);
 });
 
 test("reports invalid link encoding", () => {
@@ -132,4 +134,62 @@ test("checks image targets without counting images as navigation", () => {
     embedded.output,
     /concept\.md: unreachable from bundle index.md/,
   );
+});
+
+const lean = `namespace Knowledge.Development
+
+/-- 差分 -/
+structure Artifact.Diff where
+  before : Nat
+  after : Nat
+
+namespace PullRequest
+
+def Fulfills : Prop := True
+
+end PullRequest
+
+end Knowledge.Development
+`;
+
+test("accepts links to project files outside the bundle with --project", () => {
+  const result = validate(
+    {
+      "knowledge/index.md":
+        "[Model](../src/Model.lean) [Notes](../NOTES.md) [`Artifact.Diff`](../src/Model.lean) [`Fulfills`](../src/Model.lean) [`Diff.before`](../src/Model.lean)",
+      "src/Model.lean": lean,
+      "NOTES.md": "Not part of the bundle",
+    },
+    ["--project", "<root>"],
+  );
+  assert.equal(result.status, 0, result.output);
+});
+
+test("rejects Lean names that the linked file does not declare", () => {
+  const result = validate(
+    {
+      "knowledge/index.md":
+        "[`Missing`](../src/Model.lean) [`Diff.middle`](../src/Model.lean)",
+      "src/Model.lean": lean,
+    },
+    ["--project", "<root>"],
+  );
+  assert.equal(result.status, 1, result.output);
+  assert.match(
+    result.output,
+    /Lean name not found in \.\.\/src\/Model\.lean: Missing/,
+  );
+  assert.match(
+    result.output,
+    /Lean name not found in \.\.\/src\/Model\.lean: Diff\.middle/,
+  );
+});
+
+test("rejects links leaving the project", () => {
+  const result = validate(
+    { "knowledge/index.md": "[Outside](../../outside.md)" },
+    ["--project", "<root>"],
+  );
+  assert.equal(result.status, 1, result.output);
+  assert.match(result.output, /internal link leaves project/);
 });
