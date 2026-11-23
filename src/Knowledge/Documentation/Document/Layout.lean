@@ -2,7 +2,7 @@ import Knowledge.Documentation.Document.Model
 
 /-! # レイアウトの条件
 
-節の並びについての条件。どれも文書が持つ性質で、読者にどう効くかは読みやすさの側で扱う。 -/
+節の並びについての条件。どれも文書が持つ性質で、文書の種類が取るべきレイアウトとして使う。 -/
 
 namespace Knowledge.Documentation
 
@@ -18,11 +18,15 @@ example : Grouped id [1, 1, 2] := by simp [Grouped]
 /-- 検算。`[1, 2, 1]` はまとまっていない。 -/
 example : ¬Grouped id [1, 2, 1] := by simp [Grouped]
 
-/-- 役割ごとにまとまっている。同じ役割の節が連続している。役割を問いにすれば、問いごとのまとまりになる。 -/
+/-- 役割ごとにまとまっている。同じ役割の節が連続している。役割を問いにすれば、問いごとのまとまりになる。
+離れた指示を拾う負担と保持する負担が減り得る一方、見出しや補足、複数のまとまりの往復が増え得る。
+節を移しても条件・参照先・実行順序を保てる文書に向く。 -/
 def Document.GroupedByRole (d : Document) : Prop :=
   Grouped (·.role) d.sections
 
-/-- 前提に沿っている。どの節の事柄も、後ろの節の事柄を前提にしない。 -/
+/-- 前提に沿っている。どの節の事柄も、後ろの節の事柄を前提にしない。
+未説明の前提を補う負担と、前に戻る負担が減り得る一方、結論を探す時間や既知の説明を読む時間が増え得る。
+途中から読む読者には、その開始位置の頭の中で評価し直す。 -/
 def Document.OrderedByPrerequisite (d : Document) : Prop :=
   d.sections.Pairwise fun a b => ∀ p ∈ a.points, ∀ q ∈ b.points, ¬d.content.needs p q
 

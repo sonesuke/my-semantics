@@ -1,4 +1,4 @@
-import Knowledge.Documentation.Document.Style
+import Knowledge.Documentation.Document.Style.Model
 
 /-! # 内容のモデル
 

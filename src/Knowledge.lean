@@ -7,7 +7,9 @@ import Knowledge.Development.Repository.Model
 import Knowledge.Development.Cost.Model
 import Knowledge.Development.Justification.Deviation
 import Knowledge.Development.Cost.Approval
-import Knowledge.Documentation.Document.Style
+import Knowledge.Documentation.Document.Style.Model
+import Knowledge.Documentation.Document.Style.Diction
+import Knowledge.Documentation.Document.Style.Construction
 import Knowledge.Documentation.Document.Model
 import Knowledge.Documentation.Document.Genre.Proposal
 import Knowledge.Documentation.Document.Genre.Prep
@@ -15,5 +17,3 @@ import Knowledge.Documentation.Document.Layout
 import Knowledge.Documentation.Reader.Model
 import Knowledge.Documentation.Reader.Theorems
 import Knowledge.Documentation.Document.Content
-import Knowledge.Documentation.Readability.Model
-import Knowledge.Documentation.Readability.Strategy
