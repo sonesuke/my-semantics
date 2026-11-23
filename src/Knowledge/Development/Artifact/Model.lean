@@ -40,4 +40,29 @@ structure Artifact.Diff where
   before : Artifact
   after : Artifact
 
+/-- 理由。中身は明かさない。 -/
+opaque Justification : Type
+
+/-- 変更要件。要求の書き換えではなく差分の条件にするのは、充足を差分についての命題にするため。 -/
+structure Artifact.Modification where
+  /-- 受け入れる -/
+  admits : Artifact.Diff → Prop
+  /-- なぜこの変更をするか -/
+  justification : Justification
+
+/-- 証拠。中身は明かさない。 -/
+opaque Evidence : Type
+
+/-- 検証の裏付け。証拠か、証拠がなくてよい理由のどちらか。 -/
+inductive Artifact.Verification.Support where
+  | evidence (e : Evidence)
+  /-- 検証の残し。理由を必須にするので、理由のない検証の残しは表せない。 -/
+  | waived (j : Justification)
+
+/-- 検証 -/
+structure Artifact.Verification where
+  /-- 確かめる命題 -/
+  verify : Artifact → Prop
+  support : Artifact.Verification.Support
+
 end Knowledge.Development
