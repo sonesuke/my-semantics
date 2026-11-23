@@ -22,7 +22,8 @@ def Artifact.mergeAll (a : Artifact) : List PullRequest.Approved → Artifact
   | [] => a
   | p :: ps => (p.1.result a).mergeAll ps
 
-/-- 履歴が一貫している。どのPRも、その時点の成果物に適用可能である。 -/
+/-- 履歴が一貫している。どのPRも、その時点の成果物に適用可能である。
+正しさは求めない。逸脱があれば理由を示し、受け入れるかは承認で判断する。 -/
 def Artifact.Mergeable (a : Artifact) : List PullRequest.Approved → Prop
   | [] => True
   | p :: ps => p.1.Applicable a ∧ (p.1.result a).Mergeable ps

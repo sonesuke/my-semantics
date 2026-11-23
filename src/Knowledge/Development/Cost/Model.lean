@@ -2,7 +2,7 @@ import Knowledge.Development.Repository.Model
 
 /-! # 費用のモデル
 
-ルールと実装の費用は読まれるたびに、承認の費用は一度だけかかる。 -/
+ルールと実装の費用は読まれるたびに、承認の費用（`Cost/Approval`）は一度だけかかる。 -/
 
 namespace Knowledge.Development
 
@@ -12,10 +12,12 @@ structure CognitiveCost where
   rule : Rule → Nat
   /-- ルールを知った上で実装を読む費用。ルールが実装を読みやすくする効果を表すため、ルールに依存させる。 -/
   implementation : List Rule → Implementation → Nat
-  /-- PRを承認に至るまで読む費用。PRの読みやすさはこの費用として表れる。 -/
-  approval : Repository → PullRequest → Nat
+  /-- PR自体を読む費用。PRの読みやすさはこの費用として表れる。 -/
+  reading : Repository → PullRequest → Nat
   /-- 空のPRはPRとして成立しないので、常に正。 -/
-  approval_positive : ∀ s p, 0 < approval s p
+  reading_positive : ∀ s p, 0 < reading s p
+  /-- 理由を読む費用 -/
+  justification : Justification → Nat
 
 /-- ルールを覚える費用の合計。数で測らないのは、一つのルールにすべてを詰め込めるため。 -/
 def Rule.cost (c : CognitiveCost) (rules : List Rule) : Nat :=
@@ -35,11 +37,5 @@ def Artifact.MinimalImplementation (c : CognitiveCost) (a : Artifact) : Prop :=
     ∀ b : Artifact, b.requirements = a.requirements → b.behaviors = a.behaviors →
       b.rules = a.rules → b.Correct → b.Conforms →
       Implementation.cost c a.rules a.implementations ≤ Implementation.cost c b.rules b.implementations
-
-/-- ROI。分子は、PRの価値 1 と、見積もりより減った費用の `reads` 回分の和。分母は承認の費用。
-価値を 1 に固定するのは、動かせると差の項を好きなだけ希薄にできるため。 -/
-def PullRequest.roi (c : CognitiveCost) (reads : Nat) (s : Repository) (p : PullRequest) : Rat :=
-  let resultCost := (p.result s.artifact).ruleImplementationCost c
-  ((1 : Int) + reads * ((p.body.estimate : Int) - resultCost) : Int) / (c.approval s p : Rat)
 
 end Knowledge.Development
