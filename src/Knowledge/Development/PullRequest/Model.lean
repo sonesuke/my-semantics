@@ -16,22 +16,30 @@ def Artifact.ChangeRequest.apply (cr : Artifact.ChangeRequest) (a : Artifact)
     implementations := is
     rules := cr.rules a.rules }
 
+/-! ## CI -/
+
+/-- CI結果。CIは自動で走るので、その結果は観測されたものとして証拠に使ってよい。 -/
+structure PullRequest.CI where
+  results : List Evidence
+  observed : ∀ e ∈ results, e.Observed
+
 /-! ## 本文 -/
 
-/-- 本文。作った時点の成果物 `base` と変更後の実装 `is` に依存し、その変更の検証しか持てない。 -/
-structure PullRequest.Body (base : Artifact) (is : List Implementation) where
+/-- 本文。作った時点の成果物 `base` と変更後の実装 `is` に依存し、その変更の検証しか持てない。
+CI結果 `ci` にも依存し、検証ではCI結果を書き写さずに証拠として使える。 -/
+structure PullRequest.Body (base : Artifact) (is : List Implementation) (ci : PullRequest.CI) where
   /-- 範囲。このPRが引き受ける変更要件。Issueの変更要件を変えたものでもよい。 -/
   scope : Artifact.ChangeRequest
   /-- 検証 -/
-  verification : Verification ⟨base, scope.apply base is⟩
+  verification : Verification ⟨base, scope.apply base is⟩ ci.results
   /-- 見積もり。既定路線のルールと実装の費用。既定路線の実装はないので、提案者が見積もる。 -/
   estimate : Nat
   /-- 実装の理由。実装の費用が見積もりを超えるとき、なぜ超えてよいか。 -/
   implementationJustification : Justification
 
 /-- 要約。本文に依存させ、その本文の要約でしかあり得ないようにする。 -/
-opaque PullRequest.Summary {base : Artifact} {is : List Implementation} :
-  PullRequest.Body base is → Type
+opaque PullRequest.Summary {base : Artifact} {is : List Implementation} {ci : PullRequest.CI} :
+  PullRequest.Body base is ci → Type
 
 /-! ## PR -/
 
@@ -42,10 +50,9 @@ structure PullRequest where
   base : Artifact
   /-- 変更後の実装 -/
   implementations : List Implementation
-  body : PullRequest.Body base implementations
+  ci : PullRequest.CI
+  body : PullRequest.Body base implementations ci
   title : PullRequest.Summary body
-  /-- CI結果。証拠として扱う。 -/
-  ciResults : List Evidence
 
 /-- 変更後の成果物 -/
 def PullRequest.result (p : PullRequest) : Artifact :=
@@ -92,9 +99,5 @@ opaque PullRequest.Approval : PullRequest → Type
 
 /-- 承認されたPR -/
 abbrev PullRequest.Approved := (p : PullRequest) × PullRequest.Approval p
-
-/-- 証拠。検証の証拠とCI結果。 -/
-def PullRequest.evidences (p : PullRequest) : List Evidence :=
-  p.body.verification.evidences ++ p.ciResults
 
 end Knowledge.Development
