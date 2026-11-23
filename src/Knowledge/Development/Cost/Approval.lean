@@ -6,11 +6,11 @@ namespace Knowledge.Development
 
 /-- 承認の費用。PR自体を読む費用と、逸脱の理由を読む費用の和。 -/
 noncomputable def PullRequest.approvalCost (c : CognitiveCost) (s : Repository) (p : PullRequest) : Nat :=
-  c.reading s p + ((p.deviations c s.artifact).map c.justification).sum
+  c.reading s p + ((p.deviations c).map c.justification).sum
 
 /-- 逸脱の理由は、それを読む費用が承認の費用に加わる。 -/
 theorem PullRequest.approvalCost_of_deviation (c : CognitiveCost) (s : Repository) (p : PullRequest)
-    (j : Justification) (h : j ∈ p.deviations c s.artifact) :
+    (j : Justification) (h : j ∈ p.deviations c) :
     c.reading s p + c.justification j ≤ p.approvalCost c s := by
   have key : ∀ l : List Justification, j ∈ l → c.justification j ≤ (l.map c.justification).sum := by
     intro l hl
@@ -29,22 +29,22 @@ theorem PullRequest.approvalCost_of_rescoped (c : CognitiveCost) (s : Repository
     c.reading s p + c.justification p.body.scope.justification ≤ p.approvalCost c s :=
   p.approvalCost_of_deviation c s _ (by simp [PullRequest.deviations, h])
 
-/-- 検証を通っていないPRは、承認の費用に検証の理由を読む費用が加わる。 -/
-theorem PullRequest.approvalCost_of_unverified (c : CognitiveCost) (s : Repository) (p : PullRequest)
-    (h : ¬p.Verified s.artifact) :
-    c.reading s p + c.justification p.body.verification.justification ≤ p.approvalCost c s :=
+/-- 確かめない部分があるPRは、承認の費用にその理由を読む費用が加わる。 -/
+theorem PullRequest.approvalCost_of_uncovered (c : CognitiveCost) (s : Repository) (p : PullRequest)
+    (j : Justification) (h : j ∈ p.body.verification.uncovered) :
+    c.reading s p + c.justification j ≤ p.approvalCost c s :=
   p.approvalCost_of_deviation c s _ (by simp [PullRequest.deviations, h])
 
 /-- 見積もりを超えるPRは、承認の費用に実装の理由を読む費用が加わる。 -/
 theorem PullRequest.approvalCost_of_overEstimate (c : CognitiveCost) (s : Repository)
-    (p : PullRequest) (h : p.OverEstimate c s.artifact) :
+    (p : PullRequest) (h : p.OverEstimate c) :
     c.reading s p + c.justification p.body.implementationJustification ≤ p.approvalCost c s :=
   p.approvalCost_of_deviation c s _ (by simp [PullRequest.deviations, h])
 
 /-- ROI。分子は、PRの価値 1 と、見積もりより減った費用の `reads` 回分の和。分母は承認の費用。
 価値を 1 に固定するのは、動かせると差の項を好きなだけ希薄にできるため。 -/
 noncomputable def PullRequest.roi (c : CognitiveCost) (reads : Nat) (s : Repository) (p : PullRequest) : Rat :=
-  let resultCost := (p.result s.artifact).ruleImplementationCost c
+  let resultCost := p.result.ruleImplementationCost c
   ((1 : Int) + reads * ((p.body.estimate : Int) - resultCost) : Int) / (p.approvalCost c s : Rat)
 
 end Knowledge.Development
