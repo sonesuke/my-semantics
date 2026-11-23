@@ -12,8 +12,4 @@ structure Repository where
   issues : List Issue
   pullRequests : List PullRequest
 
-/-- 適用可能。リポジトリ状態を参照するので、循環を避けてPRではなくここに置く。 -/
-def PullRequest.Applicable (s : Repository) (p : PullRequest) : Prop :=
-  p.diff.before = s.artifact
-
 end Knowledge.Development
