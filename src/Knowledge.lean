@@ -7,6 +7,8 @@ import Knowledge.Development.Repository.Model
 import Knowledge.Development.Cost.Model
 import Knowledge.Development.Justification.Deviation
 import Knowledge.Development.Cost.Approval
+import Knowledge.Documentation.Layout.Model
+import Knowledge.Documentation.Layout.Proposal
 import Knowledge.Documentation.Expression.Model
 import Knowledge.Documentation.Expression.Theorems
 import Knowledge.Documentation.Expression.Strategy
