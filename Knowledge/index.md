@@ -8,5 +8,5 @@ okf_version: "0.2"
 
 ## トピック
 
-- [Development](./development/index.md) — 開発の知識。成果物、検証、Issue、PR、リポジトリ、費用
-- [Documentation](./documentation/index.md) — 文章の知識。文書、文体、文書の種類、読者
+- [Development](./Development/index.md) — 開発の知識。成果物、検証、Issue、PR、リポジトリ、費用
+- [Documentation](./Documentation/index.md) — 文章の知識。文書、文体、文書の種類、読者

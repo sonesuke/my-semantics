@@ -1,0 +1,11 @@
+# Development
+
+開発の知識。成果物を変えていく流れを、Issue が何を変えるかを定め、PR が実装の変更とそれへの変更を持ち、承認されたものがリポジトリに積み重なる、という形で説明する。
+
+- [理由](./Justification/justification.md) — 承認で受け入れられるかが判断される、妥当さの説明
+- [成果物](./Artifact/artifact.md) — 要求・振る舞い・実装・設計ルールと、その変更要件
+- [検証](./Verification/verification.md) — 振る舞いとルールを確かめたか、確かめない理由
+- [Issue](./Issue/issue.md) — 変更要件を持つもの
+- [PR](./PullRequest/pull-request.md) — 実装の変更と範囲を持ち、承認を求めるもの
+- [リポジトリ](./Repository/repository.md) — 承認された PR の履歴
+- [費用](./Cost/cost.md) — 認知コスト、既定路線からの逸脱、承認の費用と ROI
