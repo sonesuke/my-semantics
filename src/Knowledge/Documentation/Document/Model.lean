@@ -22,6 +22,10 @@ structure Genre where
 def Genre.fixed {Role : Type} (roles : List Role) : List Role → Prop :=
   (· = roles)
 
+/-- 順序を守るレイアウト。節の役割は `roles` の順序に沿って並び、`required` の役割は必ず含む。それ以外は省いてよい。 -/
+def Genre.ordered {Role : Type} (roles required : List Role) : List Role → Prop :=
+  fun l => l.Sublist roles ∧ ∀ r ∈ required, r ∈ l
+
 /-- 節。役割と、伝える事柄と、文体を持つ。 -/
 structure Section (g : Genre) where
   role : g.Role
