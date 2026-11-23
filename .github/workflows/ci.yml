@@ -9,9 +9,14 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - uses: DeterminateSystems/nix-installer-action@v23
-      - name: Install dependencies
-        run: nix develop --command npm ci
-      - name: Check formatting and lint
-        run: nix develop --command npm run check
+      - name: Check Nix files
+        run: |
+          nix develop --command nixfmt --check flake.nix
+          nix develop --command statix check flake.nix
+          nix develop --command deadnix --fail flake.nix
+      - name: Validate OKF bundle
+        run: |
+          nix develop --command okq --bundle Knowledge validate --check
+          nix develop --command okq --bundle Knowledge deadlinks --check
       - name: Build Lean and check proofs
         run: nix develop --command lake build
