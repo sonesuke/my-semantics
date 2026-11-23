@@ -1,5 +1,5 @@
 {
-  description = "my-semantics: knowledge bundle in Open Knowledge Format (OKF)";
+  description = "my-semantics: software development knowledge formalized in Lean 4";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
@@ -14,9 +14,9 @@
         pkgs = nixpkgs.legacyPackages.${system};
       in
       {
-        # Node.js runs prettier, markdownlint-cli2 and the OKF validator (see package.json);
+        # Node.js runs prettier and markdownlint-cli2 (see package.json);
         # nixfmt, statix and deadnix format and lint the Nix files;
-        # elan installs the Lean toolchain pinned in src/lean-toolchain.
+        # elan installs the Lean toolchain pinned in lean-toolchain.
         devShells.default = pkgs.mkShell {
           packages = [
             pkgs.nodejs
