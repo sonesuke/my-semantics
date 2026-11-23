@@ -4,7 +4,7 @@ import Knowledge.Documentation.Document.Genre.Prep
 
 /-! # 文書の最適化戦略
 
-意味と理解の条件を保ちながら、理解までの費用を減らす文書を探す。 -/
+内容を固定したまま、レイアウトか文体を変えて、理解までの費用を減らす文書を探す。 -/
 
 namespace Knowledge.Documentation
 
@@ -17,22 +17,22 @@ structure Strategy where
 
 namespace Strategy
 
-variable (C : Content) (R : Reader) (w : Weights) (S : Strategy)
+variable (R : Reader) (w : Weights) (S : Strategy)
 
-/-- 採用できる。入力か変換候補のうち、意味を保ち、理解できる経路があり、成功確率が下がらないもの。
+/-- 採用できる。入力か変換候補のうち、内容が同じで、意味を保ち、理解できる経路があり、成功確率が下がらないもの。
 入力そのものも含めるので、改善がなければ入力を残せる。 -/
 def Feasible (e x : Document) : Prop :=
-  (x = e ∨ x ∈ S.candidates e) ∧ C.Faithful x ∧ R.Reachable w x ∧
+  (x = e ∨ x ∈ S.candidates e) ∧ x.content = e.content ∧ x.Faithful ∧ R.Reachable w x ∧
     R.successProbability e ≤ R.successProbability x
 
 /-- 選ぶ。採用できるもののうち、理解までの距離が最小のものを選ぶ。入力も最小なら入力を選ぶ。
 候補の生成と改善の成立は別で、距離や確率を評価できなければ、選べるとまでは判定しない。 -/
 def Chooses (e x : Document) : Prop :=
-  S.Feasible C R w e x ∧ (∀ y, S.Feasible C R w e y → R.DistanceLe w x y) ∧
-    ((∀ y, S.Feasible C R w e y → R.DistanceLe w e y) → x = e)
+  S.Feasible R w e x ∧ (∀ y, S.Feasible R w e y → R.DistanceLe w x y) ∧
+    ((∀ y, S.Feasible R w e y → R.DistanceLe w e y) → x = e)
 
 /-- 入力が採用できるなら、選んだ文書は入力より理解までの距離が大きくない。 -/
-theorem distanceLe_of_chooses (e x : Document) (he : S.Feasible C R w e e) (h : S.Chooses C R w e x) :
+theorem distanceLe_of_chooses (e x : Document) (he : S.Feasible R w e e) (h : S.Chooses R w e x) :
     R.DistanceLe w x e :=
   h.2.1 e he
 
@@ -56,15 +56,18 @@ structure CostEffect where
   reduces : List CostComponent
   increases : List CostComponent
 
-/-! ### レイアウトを変える戦略 -/
+/-! ### レイアウトを変える戦略
 
-/-- PREP法（`prep`）に従わせる。結論を探す負担と、目的がわからないまま保持する負担が減り、
+レイアウトを変える戦略は、文書をその種類のレイアウトに従わせること（`Document.Conforms`）。
+どの並びがよいかは種類が決めるので、ここでは種類が取り得るレイアウトごとの費用の変化を述べる。 -/
+
+/-- PREP法（`prep`）に従わせる（`Document.Conforms`）。結論を探す負担と、目的がわからないまま保持する負担が減り、
 反復の分だけ読む時間が増える。適用対象は、結論・理由・具体例に分けられ、読者が冒頭の結論を理解できる文書。
 型に沿うこと自体を改善とはしない。 -/
 def prepEffect : CostEffect :=
   { reduces := [.search, .memory], increases := [.time] }
 
-/-- 問いごとにまとめる（`Document.GroupedByQuestion`）。離れた指示を拾う負担と保持する負担が減り、
+/-- 問いごとにまとめる（`Document.GroupedByRole`、役割を問いにする）。離れた指示を拾う負担と保持する負担が減り、
 見出しや補足、複数のまとまりの往復が増える。適用対象は、目的を問いに分けられ、
 節を移しても条件・参照先・実行順序を保てる文書。 -/
 def groupByQuestionEffect : CostEffect :=

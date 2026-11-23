@@ -22,6 +22,6 @@ inductive ProposalRole where
 /-- 提案書。背景と課題を示してから提案し、効果と費用を比べたうえで、判断してほしいことを示す。 -/
 def proposal : Genre where
   Role := ProposalRole
-  layout := [.background, .problem, .proposal, .effect, .cost, .decision]
+  layout := Genre.fixed [.background, .problem, .proposal, .effect, .cost, .decision]
 
 end Knowledge.Documentation
