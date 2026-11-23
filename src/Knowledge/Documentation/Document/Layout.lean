@@ -18,15 +18,17 @@ example : Grouped id [1, 1, 2] := by simp [Grouped]
 /-- 検算。`[1, 2, 1]` はまとまっていない。 -/
 example : ¬Grouped id [1, 2, 1] := by simp [Grouped]
 
-/-- 問いごとにまとまっている。各節が答える主な問い `question` ごとに、節が連続している。 -/
-def Document.GroupedByQuestion {Question : Type} (d : Document)
-    (question : d.genre.Role × Style → Question) : Prop :=
-  Grouped question d.sections
+/-- 役割ごとにまとまっている。同じ役割の節が連続している。役割を問いにすれば、問いごとのまとまりになる。 -/
+def Document.GroupedByRole (d : Document) : Prop :=
+  Grouped (·.role) d.sections
 
-/-- 前提に沿っている。どの節も、後ろの節が導入する前提に依存しない。
-`needs a b` は「節 `a` の理解に、節 `b` が導入する前提が必要」。 -/
-def Document.OrderedByPrerequisite (d : Document)
-    (needs : d.genre.Role × Style → d.genre.Role × Style → Prop) : Prop :=
-  d.sections.Pairwise fun a b => ¬needs a b
+/-- 前提に沿っている。どの節の事柄も、後ろの節の事柄を前提にしない。 -/
+def Document.OrderedByPrerequisite (d : Document) : Prop :=
+  d.sections.Pairwise fun a b => ∀ p ∈ a.points, ∀ q ∈ b.points, ¬d.content.needs p q
+
+/-- 文体だけが違う。内容と種類が同じで、節の役割と事柄の割り当ても同じ。 -/
+def Document.SameLayout (d d' : Document) : Prop :=
+  d.content = d'.content ∧ d.genre = d'.genre ∧
+    HEq (d.sections.map fun s => (s.role, s.points)) (d'.sections.map fun s => (s.role, s.points))
 
 end Knowledge.Documentation

@@ -16,6 +16,6 @@ inductive PrepRole where
 /-- PREP法。結論を先に示してから、理由と具体例で支持し、結論を繰り返す。 -/
 def prep : Genre where
   Role := PrepRole
-  layout := [.point, .reason, .example, .point]
+  layout := Genre.fixed [.point, .reason, .example, .point]
 
 end Knowledge.Documentation
