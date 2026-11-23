@@ -13,8 +13,10 @@ structure PullRequest.Body where
   scope : Artifact.ChangeRequest
   /-- 検証 -/
   verification : Artifact.Verification
-  /-- 見積もり。Issueどおりに作った場合のルールと実装の費用。Issueどおりの実装はないので、提案者が見積もる。 -/
+  /-- 見積もり。既定路線のルールと実装の費用。既定路線の実装はないので、提案者が見積もる。 -/
   estimate : Nat
+  /-- 実装の理由。実装の費用が見積もりを超えるとき、なぜ超えてよいか。 -/
+  implementationJustification : Justification
 
 /-- 要約。本文に依存させ、その本文の要約でしかあり得ないようにする。 -/
 opaque PullRequest.Summary : PullRequest.Body → Type
@@ -81,7 +83,7 @@ theorem PullRequest.delivers_of_verified (p : PullRequest) (a : Artifact)
     (hs : p.body.verification.Sound) (hv : p.Verified a) : p.Delivers a :=
   hs (p.artifactDiff a) hv
 
-/-- 承認。人間がPRを受け入れる判断。理由と見積もりの妥当さ、要求の価値はここで判断する。 -/
+/-- 承認。人間がPRを受け入れる判断。正しさ、理由と見積もりの妥当さ、要求の価値はここで判断する。 -/
 opaque PullRequest.Approval : PullRequest → Type
 
 /-- 承認されたPR -/
