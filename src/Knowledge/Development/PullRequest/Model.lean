@@ -8,14 +8,6 @@ PRは、足りない部分を書いていなければ作れない。レビュー
 
 namespace Knowledge.Development
 
-/-- 変更要件を当てた成果物。適用先 `a` に変更要件 `cr` を当て、実装を `is` にしたもの。 -/
-def Artifact.ChangeRequest.apply (cr : Artifact.ChangeRequest) (a : Artifact)
-    (is : List Implementation) : Artifact :=
-  { requirements := cr.requirements a.requirements
-    behaviors := cr.behaviors a.behaviors
-    implementations := is
-    rules := cr.rules a.rules }
-
 /-! ## CI -/
 
 /-- CI結果。CIは自動で走るので、その結果は観測されたものとして証拠に使ってよい。 -/
@@ -105,7 +97,8 @@ theorem PullRequest.delivers_iff_resolves (p : PullRequest) (h : ¬p.Rescoped) :
   simp [PullRequest.Delivers, PullRequest.Resolves, PullRequest.result, PullRequest.changeRequest,
     Artifact.ChangeRequest.apply, PullRequest.Scope.changeRequest, hs]
 
-/-- 承認。人間がPRを受け入れる判断。正しさ、理由と見積もりの妥当さ、要求の価値はここで判断する。 -/
+/-- 承認。人間がPRを受け入れる判断。正しさ、理由と見積もりの妥当さ、要求の価値はここで判断する。
+範囲を変えたPRの承認は、その範囲の変更を認めることでもある。 -/
 opaque PullRequest.Approval : PullRequest → Type
 
 /-- 承認されたPR -/
