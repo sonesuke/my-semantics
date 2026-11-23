@@ -6,10 +6,49 @@ import Knowledge.Development.PullRequest.Model
 
 namespace Knowledge.Development
 
-/-- リポジトリ状態。PRはこの要素なので、PRが変えるのはリポジトリ状態ではなく成果物である。 -/
+/-- リポジトリ状態。今の成果物も、IssueとPRの状態も持たず、最初の成果物とマージの履歴から求める。
+状態を別に持つと、履歴と食い違い得るため。 -/
 structure Repository where
-  artifact : Artifact
+  initial : Artifact
+  /-- マージの履歴。古い順。 -/
+  merged : List PullRequest.Approved
+  /-- 作られたすべてのIssue -/
   issues : List Issue
+  /-- 作られたすべてのPR -/
   pullRequests : List PullRequest
+
+/-- 成果物 `a` に、PRを順にマージした後の成果物。 -/
+def Artifact.mergeAll (a : Artifact) : List PullRequest.Approved → Artifact
+  | [] => a
+  | p :: ps => Artifact.mergeAll p.1.result ps
+
+/-- 履歴が一貫している。どのPRも、その時点の成果物に適用可能である。 -/
+def Artifact.Mergeable (a : Artifact) : List PullRequest.Approved → Prop
+  | [] => True
+  | p :: ps => p.1.Applicable a ∧ Artifact.Mergeable p.1.result ps
+
+/-- 今の成果物 -/
+def Repository.artifact (s : Repository) : Artifact :=
+  s.initial.mergeAll s.merged
+
+/-- 一貫している -/
+def Repository.Consistent (s : Repository) : Prop :=
+  s.initial.Mergeable s.merged
+
+/-- マージされた。マージの履歴に含まれる。 -/
+def Repository.Merged (s : Repository) (p : PullRequest) : Prop :=
+  p ∈ s.merged.map (·.1)
+
+/-- 解決された。解決するPRが、マージの履歴に含まれる。 -/
+def Repository.Resolved (s : Repository) (i : Issue) : Prop :=
+  ∃ p, s.Merged p ∧ p.issue = i ∧ p.Resolves
+
+/-- 開いているPR -/
+def Repository.OpenPullRequest (s : Repository) (p : PullRequest) : Prop :=
+  p ∈ s.pullRequests ∧ ¬s.Merged p
+
+/-- 開いているIssue -/
+def Repository.OpenIssue (s : Repository) (i : Issue) : Prop :=
+  i ∈ s.issues ∧ ¬s.Resolved i
 
 end Knowledge.Development

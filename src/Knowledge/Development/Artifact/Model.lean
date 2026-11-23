@@ -1,3 +1,5 @@
+import Knowledge.Development.Justification.Model
+
 /-! # 成果物のモデル -/
 
 namespace Knowledge.Development
@@ -7,7 +9,8 @@ opaque Implementation : Type
 
 /-- 振る舞い。成果物が何をするか。 -/
 structure Behavior where
-  /-- `RealizedBy is` は「実装 `is` 全体が振る舞いを実現する」。 -/
+  /-- `RealizedBy is` は「実装 `is` 全体が振る舞いを実現する」。
+  全体を相手にするのは、一つの振る舞いが複数の実装の協調で実現されるため。 -/
   RealizedBy : List Implementation → Prop
 
 /-- 要求。振る舞いが満たすべき条件。 -/
@@ -17,7 +20,8 @@ structure Requirement where
 
 /-- 設計ルール。実装が従う決まり。要求でも振る舞いでもない。 -/
 structure Rule where
-  /-- `ConformedBy i` は「実装 `i` がルールに適合する」。 -/
+  /-- `ConformedBy i` は「実装 `i` がルールに適合する」。
+  振る舞いと違い実装一つずつを相手にするのは、ルールが各実装の書き方についての決まりであるため。 -/
   ConformedBy : Implementation → Prop
 
 /-- 成果物。開発者が作り、保守するもの。設計ルールも含める。 -/
@@ -60,9 +64,6 @@ structure Rule.Diff where
 structure Implementation.Diff where
   before : List Implementation
   after : List Implementation
-
-/-- 理由。中身は明かさない。 -/
-opaque Justification : Type
 
 /-- 変更要件。要求・振る舞い・設計ルールをどう変えるか。実装の変更は持たない。 -/
 structure Artifact.ChangeRequest where
