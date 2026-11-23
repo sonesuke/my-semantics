@@ -9,13 +9,10 @@ namespace Knowledge.Development
 /-- リポジトリ状態。今の成果物も、IssueとPRの状態も持たず、最初の成果物とマージの履歴から求める。
 状態を別に持つと、履歴と食い違い得るため。 -/
 structure Repository where
-  initial : Artifact
-  /-- マージの履歴。古い順。 -/
-  merged : List PullRequest.Approved
-  /-- 作られたすべてのIssue -/
-  issues : List Issue
-  /-- 作られたすべてのPR -/
-  pullRequests : List PullRequest
+  initial : Artifact                  -- 最初の成果物
+  merged : List PullRequest.Approved  -- マージの履歴（古い順）
+  issues : List Issue                 -- 作られたすべてのIssue
+  pullRequests : List PullRequest     -- 作られたすべてのPR
 
 /-- 成果物 `a` に、PRを順にマージした後の成果物。 -/
 def Artifact.mergeAll (a : Artifact) : List PullRequest.Approved → Artifact

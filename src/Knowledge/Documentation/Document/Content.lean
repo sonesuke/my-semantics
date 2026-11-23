@@ -11,10 +11,8 @@ opaque Point : Type
 
 /-- 内容。伝えたい事柄と、事柄どうしの前提関係。 -/
 structure Content where
-  /-- 伝えたい事柄 -/
-  points : List Point
-  /-- `needs p q` は「事柄 `p` の理解に、事柄 `q` が必要」。 -/
-  needs : Point → Point → Prop
+  points : List Point           -- 伝えたい事柄
+  needs : Point → Point → Prop  -- needs p q：事柄 p の理解に、事柄 q が必要
 
 /-- `s.Conveys p` は「文体 `s` で書いた節が、事柄 `p` を伝える」。言い換えで条件や留保が落ちれば伝わらない。 -/
 opaque Style.Conveys : Style → Point → Prop

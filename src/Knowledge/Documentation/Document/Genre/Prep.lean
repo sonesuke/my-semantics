@@ -8,12 +8,9 @@ namespace Knowledge.Documentation
 
 /-- PREP法の節の役割 -/
 inductive PrepRole where
-  /-- 結論 -/
-  | point
-  /-- 理由 -/
-  | reason
-  /-- 具体例 -/
-  | example
+  | point    -- 結論
+  | reason   -- 理由
+  | example  -- 具体例
 
 /-- PREP法。結論を先に示してから、理由と具体例で支持し、結論を繰り返す。
 結論を探す負担と、目的がわからないまま保持する負担が減り得る一方、反復の分だけ読む時間が増える。

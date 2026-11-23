@@ -14,9 +14,9 @@ opaque Evidence.Observed : Evidence → Prop
 自動で確かめられた証拠 `automated` と合わせて観測されれば `P` が成り立つという論証を持つ。
 確かめないなら、その理由を持つ。自動で確かめられた証拠は書き写さずに使えるようにする。 -/
 inductive Coverage (automated : List Evidence) (P : Prop) where
-  | covered (es : List Evidence) (observed : ∀ e ∈ es, e.Observed)
-      (sufficiency : (∀ e ∈ automated ++ es, e.Observed) → P)
-  | uncovered (j : Justification)
+  | covered (es : List Evidence) (observed : ∀ e ∈ es, e.Observed)  -- 確かめた：追加の証拠とその観測、
+      (sufficiency : (∀ e ∈ automated ++ es, e.Observed) → P)      -- 観測されれば成り立つという論証
+  | uncovered (j : Justification)                                    -- 確かめない：その理由
 
 /-- 確かめない理由。確かめたなら持たない。 -/
 def Coverage.justification {automated : List Evidence} {P : Prop} : Coverage automated P → Option Justification
@@ -33,8 +33,8 @@ def Coverage.justifications {automated : List Evidence} {α : Type} {P : α → 
 すべてについて持たせるのは、足りない部分を書かずに済ませられないようにするため。
 `automated` はCIのように自動で確かめられた証拠で、すべてで使える。要求を振る舞いが満たすかは承認で判断する。 -/
 structure Verification (d : Artifact.Diff) (automated : List Evidence) where
-  behaviors : ∀ b ∈ d.after.behaviors, Coverage automated (b.RealizedBy d.after.implementations)
-  rules : ∀ r ∈ d.after.rules, Coverage automated (∀ i ∈ d.after.implementations, r.ConformedBy i)
+  behaviors : ∀ b ∈ d.after.behaviors, Coverage automated (b.RealizedBy d.after.implementations)    -- 変更後の振る舞いごと
+  rules : ∀ r ∈ d.after.rules, Coverage automated (∀ i ∈ d.after.implementations, r.ConformedBy i)  -- 変更後のルールごと
 
 /-- 確かめない部分の理由 -/
 def Verification.uncovered {d : Artifact.Diff} {automated : List Evidence} (v : Verification d automated) :

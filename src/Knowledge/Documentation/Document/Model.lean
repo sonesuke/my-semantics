@@ -9,14 +9,10 @@ namespace Knowledge.Documentation
 /-- 文書の種類。提案書、報告書、Issue、PRなど。節の役割と、取るべきレイアウトと文体を定める。
 よいレイアウトと文体は種類によって違うので、種類が持つ。文書を種類に従わせることが、読みやすくする戦略になる。 -/
 structure Genre where
-  /-- 節の役割 -/
-  Role : Type
-  /-- 取るべきレイアウト。節の役割の並びが満たすべき条件。 -/
-  layout : List Role → Prop
-  /-- 取るべき文体。節の役割ごとに、文体が満たすべき条件。 -/
-  style : Role → Style → Prop
-  /-- 節をまたいで、文体の並びが満たすべき条件。言い直さない、など。 -/
-  styleAcross : List Style → Prop
+  Role : Type                      -- 節の役割
+  layout : List Role → Prop        -- 取るべきレイアウト（役割の並びの条件）
+  style : Role → Style → Prop      -- 取るべき文体（役割ごと）
+  styleAcross : List Style → Prop  -- 節をまたいだ文体の条件（言い直さない、など）
 
 /-- 決まった並びのレイアウト。節の役割の並びが `roles` と一致する。 -/
 def Genre.fixed {Role : Type} (roles : List Role) : List Role → Prop :=
@@ -28,15 +24,15 @@ def Genre.ordered {Role : Type} (roles required : List Role) : List Role → Pro
 
 /-- 節。役割と、伝える事柄と、文体を持つ。 -/
 structure Section (g : Genre) where
-  role : g.Role
-  points : List Point
-  style : Style
+  role : g.Role        -- 役割
+  points : List Point  -- 伝える事柄
+  style : Style        -- 文体
 
 /-- 文書。内容と種類と、節の並び。 -/
 structure Document where
-  content : Content
-  genre : Genre
-  sections : List (Section genre)
+  content : Content                -- 内容
+  genre : Genre                    -- 種類
+  sections : List (Section genre)  -- 節の並び
 
 /-- レイアウト。節の役割の並び。 -/
 def Document.layout (d : Document) : List d.genre.Role :=

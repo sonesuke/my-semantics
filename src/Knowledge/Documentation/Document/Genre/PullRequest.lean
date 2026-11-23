@@ -8,18 +8,12 @@ namespace Knowledge.Documentation
 
 /-- PRの節の役割 -/
 inductive PullRequestRole where
-  /-- 要約。このPRが何をするか。タイトルにあたる。 -/
-  | summary
-  /-- 範囲。どのIssueに応えるか。Issueのとおりか、変えたならどう変えたか。 -/
-  | scope
-  /-- 変更。実装をどう変えたかの要点。 -/
-  | change
-  /-- 検証。振る舞いとルールごとに確かめたこと。CIの結果は書き写さない。 -/
-  | verification
-  /-- 逸脱の理由。範囲を変えた理由、確かめない部分の理由、見積もりを超えた理由。逸脱があるときだけ置く。 -/
-  | deviation
-  /-- 判断してほしいこと。このPRを承認するか。逸脱があれば、その理由を受け入れるかも含む。 -/
-  | decision
+  | summary       -- 要約：このPRが何をするか（タイトル）
+  | scope         -- 範囲：応えるIssueと、Issueから変えた点
+  | change        -- 変更：実装の変更の要点
+  | verification  -- 検証：確かめたこと（CIの結果は書き写さない）
+  | deviation     -- 逸脱の理由：範囲・確かめない部分・見積もりの超過（逸脱があるときだけ）
+  | decision      -- 判断してほしいこと：承認するか（逸脱の理由を受け入れるかも含む）
   deriving DecidableEq
 
 /-- PR。レビュアーに、承認するかを判断してもらう文書。判断は承認するかしないかの二値なので、

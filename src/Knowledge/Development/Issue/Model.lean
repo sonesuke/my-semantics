@@ -6,6 +6,6 @@ namespace Knowledge.Development
 
 /-- Issue -/
 structure Issue where
-  changeRequest : Artifact.ChangeRequest
+  changeRequest : Artifact.ChangeRequest  -- 変更要件
 
 end Knowledge.Development

@@ -17,9 +17,9 @@ opaque Abilities : Type
 
 /-- 読者の頭の中。読み進めるにつれて変わる。誤解を含む状態も扱う。 -/
 structure Mind where
-  vocabulary : Vocabulary
-  beliefs : Beliefs
-  abilities : Abilities
+  vocabulary : Vocabulary  -- 語と概念の対応
+  beliefs : Beliefs        -- 覚えている命題や事例
+  abilities : Abilities    -- 説明・判断・実行の能力
 
 /-- 目的。読後にできるようになってほしいこと。説明の再生に加え、新しい事例の判断や反例の識別を含む。 -/
 opaque Purpose : Type
@@ -30,28 +30,19 @@ opaque Operation : Type
 /-! ## 読者 -/
 
 /-- 読者。目的、読む前の頭の中、閲覧条件のもとでの読み進め方と、その費用を持つ。
-費用は、時間・語を調べる・誤解を補う・情報を探す・同時に保持するなどの負担を、一つの物差しで測ったもの。 -/
+費用は、時間・語を調べる・誤解を補う・情報を探す・同時に保持するなどの負担を、一つの物差しで測ったもの。
+十分な応答には、情報不足のときの「判断できない」も含み得る。同じ文書から理解にも誤解にも進み得るので、
+読み進め方は関係にする。成功確率は、誤解や途中離脱も含めた分布のもとで理解に至る確率で、距離とは分けて評価する。 -/
 structure Reader where
-  /-- 目的。有限で空でない。 -/
-  purposes : List Purpose
-  purposes_nonempty : purposes ≠ []
-  /-- `sufficient K g` は「頭の中が `K` のとき、目的 `g` について十分に応答できる」。
-  情報不足なら「判断できない」も十分な応答になり得る。 -/
-  sufficient : Mind → Purpose → Prop
-  /-- 読む前の頭の中 -/
-  initial : Mind
-  /-- `step e K o K'` は「文書 `e` を閲覧条件のもとで読み、操作 `o` で頭の中が `K` から `K'` に変わる」。
-  同じ文書から理解にも誤解にも進み得るので、関係にする。 -/
-  step : Document → Mind → Operation → Mind → Prop
-  /-- 操作一回の費用 -/
-  stepCost : Mind → Operation → Mind → Nat
-  /-- 知っている文書の種類。知っている種類には、そのレイアウトと文体を期待して読む。 -/
-  expects : Genre → Prop
-  /-- 期待からの逸脱一つあたりの費用 -/
-  surprise : Nat
-  /-- 成功確率。制限時間内の過程に、誤解や途中離脱も含めた分布を与えたとき、理解に至る確率。
-  距離による比較とは分けて評価する。 -/
-  successProbability : Document → Rat
+  purposes : List Purpose                           -- 目的
+  purposes_nonempty : purposes ≠ []                 -- 目的は空でない
+  sufficient : Mind → Purpose → Prop                -- sufficient K g：頭の中が K のとき、目的 g に十分に応答できる
+  initial : Mind                                    -- 読む前の頭の中
+  step : Document → Mind → Operation → Mind → Prop  -- step e K o K'：文書 e を読み、操作 o で頭の中が K から K' に変わる
+  stepCost : Mind → Operation → Mind → Nat          -- 操作一回の費用
+  expects : Genre → Prop                            -- 知っている文書の種類
+  surprise : Nat                                    -- 期待からの逸脱一つあたりの費用
+  successProbability : Document → Rat               -- 成功確率
 
 namespace Reader
 
