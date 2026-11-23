@@ -8,5 +8,4 @@ okf_version: "0.2"
 
 ## トピック
 
-- [Development](./development/index.md) — ソフトウェア開発の慣習と判断基準
 - [Documentation](./documentation/index.md) — 読者の知識と目的に応じた説明のモデルと判断基準

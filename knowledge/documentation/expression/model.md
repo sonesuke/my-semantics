@@ -122,6 +122,4 @@ q_\tau(e)=\mu_{e,K_0,\mathcal E,\tau}
 
 具体的な評価には、意味の解釈、課題と十分な応答、読者の状態、操作と費用を与える。成功確率には過程の分布も必要になる。普遍的な重みや測定方法は定めない。
 
-PRでは[PRの認知負荷](../../development/pr-request/model.md#認知負荷)と、リポジトリでは[Repository Load](../../development/repository/model.md#repository-load)と組み合わせて用いる。
-
 本モデルから導く条件付きの性質は[定理](./theorems.md)、表現の変換と選択は[最適化戦略](./strategies.md)で扱う。

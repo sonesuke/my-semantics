@@ -6,7 +6,7 @@
     "format": "prettier --write . && nixfmt flake.nix",
     "check": "prettier --check . && nixfmt --check flake.nix && statix check flake.nix && deadnix --fail flake.nix && markdownlint-cli2 && tsc && npm test && npm run validate",
     "test": "node --test scripts/*.test.ts",
-    "validate": "node scripts/okf-validate.ts knowledge",
+    "validate": "node scripts/okf-validate.ts knowledge --project .",
     "lean": "cd src && lake build"
   },
   "devDependencies": {
