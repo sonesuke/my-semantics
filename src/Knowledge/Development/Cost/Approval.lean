@@ -48,4 +48,23 @@ noncomputable def PullRequest.roi (c : CognitiveCost) (reads : Nat) (s : Reposit
   let resultCost := p.result.ruleImplementationCost c
   ((1 : Int) + reads * ((p.body.estimate : Int) - resultCost) : Int) / (p.approvalCost c s : Rat)
 
+/-- 承認の費用は正である。 -/
+theorem PullRequest.approvalCost_pos (c : CognitiveCost) (s : Repository) (p : PullRequest) :
+    0 < p.approvalCost c s :=
+  Nat.lt_of_lt_of_le (c.reading_positive s p) (Nat.le_add_right _ _)
+
+/-- 見積もりを超えないPRは、ROIが正になる。 -/
+theorem PullRequest.roi_pos (c : CognitiveCost) (reads : Nat) (s : Repository) (p : PullRequest)
+    (h : ¬p.OverEstimate c) : 0 < p.roi c reads s := by
+  have hle : p.result.ruleImplementationCost c ≤ p.body.estimate := Nat.not_lt.mp h
+  have hnum : (0 : Int) < 1 + reads * ((p.body.estimate : Int) - p.result.ruleImplementationCost c) := by
+    have : (0 : Int) ≤ (p.body.estimate : Int) - p.result.ruleImplementationCost c := by omega
+    have := Int.mul_nonneg (Int.natCast_nonneg reads) this
+    omega
+  have hden : (0 : Rat) < (p.approvalCost c s : Rat) := by
+    exact_mod_cast p.approvalCost_pos c s
+  simp only [PullRequest.roi]
+  rw [Rat.lt_div_iff hden, Rat.zero_mul]
+  exact_mod_cast hnum
+
 end Knowledge.Development
