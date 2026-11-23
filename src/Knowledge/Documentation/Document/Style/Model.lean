@@ -22,8 +22,8 @@ opaque Construction : Type
 
 /-- 文体。言葉遣いと文の組み立て。 -/
 structure Style where
-  diction : Diction
-  construction : Construction
+  diction : Diction            -- 言葉遣い
+  construction : Construction  -- 文の組み立て
 
 /-- 文体が使っている語 -/
 def Style.words (s : Style) : List Word :=

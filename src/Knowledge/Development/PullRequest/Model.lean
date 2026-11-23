@@ -12,16 +12,16 @@ namespace Knowledge.Development
 
 /-- CI結果。CIは自動で走るので、その結果は観測されたものとして証拠に使ってよい。 -/
 structure PullRequest.CI where
-  results : List Evidence
-  observed : ∀ e ∈ results, e.Observed
+  results : List Evidence               -- CI結果
+  observed : ∀ e ∈ results, e.Observed  -- 観測されたこと
 
 /-! ## 範囲 -/
 
 /-- 範囲。このPRが引き受ける変更要件。Issueのとおりか、変えたか。
 変えたなら、変えた変更要件と、なぜ変えたかの理由を持つ。変更要件の理由は「なぜこの変更をするか」のままにする。 -/
 inductive PullRequest.Scope where
-  | asIssued
-  | rescoped (changeRequest : Artifact.ChangeRequest) (j : Justification)
+  | asIssued                                                               -- Issueのとおり
+  | rescoped (changeRequest : Artifact.ChangeRequest) (j : Justification)  -- 変えた変更要件と、変えた理由
 
 /-- 範囲の変更要件 -/
 def PullRequest.Scope.changeRequest (issue : Issue) : PullRequest.Scope → Artifact.ChangeRequest
@@ -31,16 +31,14 @@ def PullRequest.Scope.changeRequest (issue : Issue) : PullRequest.Scope → Arti
 /-! ## 本文 -/
 
 /-- 本文。Issue、作った時点の成果物 `base`、変更後の実装 `is` に依存し、その変更の検証しか持てない。
-CI結果 `ci` にも依存し、検証ではCI結果を書き写さずに証拠として使える。 -/
+CI結果 `ci` にも依存し、検証ではCI結果を書き写さずに証拠として使える。
+見積もりは既定路線のルールと実装の費用で、既定路線の実装はないので提案者が見積もる。 -/
 structure PullRequest.Body (issue : Issue) (base : Artifact) (is : List Implementation)
     (ci : PullRequest.CI) where
-  scope : PullRequest.Scope
-  /-- 検証 -/
-  verification : Verification ⟨base, (scope.changeRequest issue).apply base is⟩ ci.results
-  /-- 見積もり。既定路線のルールと実装の費用。既定路線の実装はないので、提案者が見積もる。 -/
-  estimate : Nat
-  /-- 実装の理由。実装の費用が見積もりを超えるとき、なぜ超えてよいか。 -/
-  implementationJustification : Justification
+  scope : PullRequest.Scope                                                                 -- 範囲
+  verification : Verification ⟨base, (scope.changeRequest issue).apply base is⟩ ci.results  -- 検証
+  estimate : Nat                                                                            -- 既定路線の費用の見積もり
+  implementationJustification : Justification                                               -- 費用が見積もりを超えてよい理由
 
 /-- 要約。本文に依存させ、その本文の要約でしかあり得ないようにする。 -/
 opaque PullRequest.Summary {issue : Issue} {base : Artifact} {is : List Implementation}
@@ -50,14 +48,12 @@ opaque PullRequest.Summary {issue : Issue} {base : Artifact} {is : List Implemen
 
 /-- PR。Issueに応えて、作った時点の成果物に対する実装の変更と範囲を持つ。 -/
 structure PullRequest where
-  issue : Issue
-  /-- 作った時点の成果物 -/
-  base : Artifact
-  /-- 変更後の実装 -/
-  implementations : List Implementation
-  ci : PullRequest.CI
-  body : PullRequest.Body issue base implementations ci
-  title : PullRequest.Summary body
+  issue : Issue                                          -- 応えるIssue
+  base : Artifact                                        -- 作った時点の成果物
+  implementations : List Implementation                  -- 変更後の実装
+  ci : PullRequest.CI                                    -- CI結果
+  body : PullRequest.Body issue base implementations ci  -- 本文
+  title : PullRequest.Summary body                       -- タイトル（本文の要約）
 
 /-- 引き受けた変更要件 -/
 def PullRequest.changeRequest (p : PullRequest) : Artifact.ChangeRequest :=
