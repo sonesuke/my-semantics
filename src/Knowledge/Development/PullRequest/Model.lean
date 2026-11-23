@@ -47,25 +47,21 @@ structure PullRequest where
   diff : Artifact.Diff
   ciResults : List (Verification.Obligation × Verification.Evidence)
 
-namespace PullRequest
-
 /-- 充足する。差分についての一つの命題なので、部分的な充足は表せない。 -/
-def Fulfills (p : PullRequest) : Prop :=
+def PullRequest.Fulfills (p : PullRequest) : Prop :=
   p.body.modification.target.admits p.diff
 
 /-- 検証済みの検証責務。CI結果も含める。 -/
-def verified (p : PullRequest) : List (Verification.Obligation × Verification.Evidence) :=
+def PullRequest.verified (p : PullRequest) : List (Verification.Obligation × Verification.Evidence) :=
   p.body.verification.verified ++ p.ciResults
 
-theorem fulfills_of_no_amendment (p : PullRequest)
+theorem PullRequest.fulfills_of_no_amendment (p : PullRequest)
     (h : p.body.modification.amendment = none) :
     p.Fulfills ↔ p.body.modification.modification.admits p.diff := by
-  simp [Fulfills, ModificationFulfillment.target, h]
+  simp [PullRequest.Fulfills, PullRequest.ModificationFulfillment.target, h]
 
-theorem fulfills_of_amendment (p : PullRequest) (a : Amendment)
+theorem PullRequest.fulfills_of_amendment (p : PullRequest) (a : PullRequest.Amendment)
     (h : p.body.modification.amendment = some a) : p.Fulfills ↔ a.after.admits p.diff := by
-  simp [Fulfills, ModificationFulfillment.target, h]
-
-end PullRequest
+  simp [PullRequest.Fulfills, PullRequest.ModificationFulfillment.target, h]
 
 end Knowledge.Development
