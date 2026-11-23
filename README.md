@@ -5,7 +5,7 @@
 ## 構成
 
 - `knowledge/` — OKF バンドル本体 (入口は [`knowledge/index.md`](knowledge/index.md))
-- `src/` — 開発の知識 (成果物・Issue・Verification・Repository・PR) の定義・設計の理由・定理を Lean 4 で記述した正本 (`npm run lean` でビルド・証明検査。CI では実行しない)
+- `src/` — 開発の知識 (成果物・認知負荷・Issue・PR・Repository) の定義・設計の理由・定理を Lean 4 で記述した正本 (`npm run lean` でビルド・証明検査。CI では実行しない)
 - `scripts/okf-validate.ts` — OKF 適合性と、内部リンクの相対パス・参照先の存在 (プロジェクトルート内)・リンク先 Lean ファイルでの Lean 名の存在・入口から全 Markdown 文書への到達性をチェック
 
 ## 開発環境
