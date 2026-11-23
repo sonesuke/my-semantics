@@ -51,6 +51,10 @@ structure PullRequest where
 def PullRequest.Fulfills (p : PullRequest) : Prop :=
   p.body.modification.target.admits p.diff
 
+/-- 適用可能。差分の変更前が、適用先の成果物と一致する。 -/
+def PullRequest.Applicable (p : PullRequest) (a : Artifact) : Prop :=
+  p.diff.before = a
+
 /-- 検証済みの検証責務。CI結果も含める。 -/
 def PullRequest.verified (p : PullRequest) : List (Verification.Obligation × Verification.Evidence) :=
   p.body.verification.verified ++ p.ciResults
