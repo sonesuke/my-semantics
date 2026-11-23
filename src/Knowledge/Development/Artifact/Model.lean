@@ -45,31 +45,17 @@ structure Artifact.Diff where
   before : Artifact
   after : Artifact
 
-/-- 要求の変更 -/
-structure Requirement.Diff where
-  before : List Requirement
-  after : List Requirement
-
-/-- 振る舞いの変更 -/
-structure Behavior.Diff where
-  before : List Behavior
-  after : List Behavior
-
-/-- 設計ルールの変更 -/
-structure Rule.Diff where
-  before : List Rule
-  after : List Rule
-
 /-- 実装の変更 -/
 structure Implementation.Diff where
   before : List Implementation
   after : List Implementation
 
-/-- 変更要件。要求・振る舞い・設計ルールをどう変えるか。実装の変更は持たない。 -/
+/-- 変更要件。要求・振る舞い・設計ルールをどう変えるか。実装の変更は持たない。
+変更前の状態を持たず変え方として持つのは、どの時点の成果物にも当てられるようにするため。 -/
 structure Artifact.ChangeRequest where
-  requirements : Requirement.Diff
-  behaviors : Behavior.Diff
-  rules : Rule.Diff
+  requirements : List Requirement → List Requirement
+  behaviors : List Behavior → List Behavior
+  rules : List Rule → List Rule
   /-- なぜこの変更をするか -/
   justification : Justification
 

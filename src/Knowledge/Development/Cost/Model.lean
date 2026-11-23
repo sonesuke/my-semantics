@@ -39,7 +39,7 @@ def Artifact.MinimalImplementation (c : CognitiveCost) (a : Artifact) : Prop :=
 /-- ROI。分子は、PRの価値 1 と、見積もりより減った費用の `reads` 回分の和。分母は承認の費用。
 価値を 1 に固定するのは、動かせると差の項を好きなだけ希薄にできるため。 -/
 def PullRequest.roi (c : CognitiveCost) (reads : Nat) (s : Repository) (p : PullRequest) : Rat :=
-  let resultCost := p.result.ruleImplementationCost c
+  let resultCost := (p.result s.artifact).ruleImplementationCost c
   ((1 : Int) + reads * ((p.body.estimate : Int) - resultCost) : Int) / (c.approval s p : Rat)
 
 end Knowledge.Development
