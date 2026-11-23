@@ -14,6 +14,10 @@ def PullRequest.DefaultMinimalImplementation (c : CognitiveCost) (p : PullReques
     b.rules = p.issue.changeRequest.rules p.base.rules ∧
     b.MinimalImplementation c
 
+/-- 見積もりが正確。既定路線の成果物があり、その費用が見積もりと一致する。承認では、これを判断する。 -/
+def PullRequest.EstimateAccurate (c : CognitiveCost) (p : PullRequest) : Prop :=
+  ∃ b, p.DefaultMinimalImplementation c b ∧ b.ruleImplementationCost c = p.body.estimate
+
 /-- 見積もりを超える。結果のルールと実装の費用が、既定路線の見積もりより大きい。 -/
 def PullRequest.OverEstimate (c : CognitiveCost) (p : PullRequest) : Prop :=
   p.body.estimate < p.result.ruleImplementationCost c

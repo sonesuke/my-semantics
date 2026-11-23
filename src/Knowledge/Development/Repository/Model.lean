@@ -40,12 +40,13 @@ def Repository.Consistent (s : Repository) : Prop :=
 def Repository.Merged (s : Repository) (p : PullRequest) : Prop :=
   p ∈ s.merged.map (·.1)
 
-/-- 成果物 `a` からPRを順にマージする間に、Issue `i` を解決するPRがある。 -/
+/-- 成果物 `a` からPRを順にマージする間に、Issue `i` に応えて範囲を届けたPRがある。 -/
 def Artifact.ResolvesAlong (a : Artifact) (i : Issue) : List PullRequest.Approved → Prop
   | [] => False
-  | p :: ps => (p.1.issue = i ∧ p.1.Applicable a ∧ p.1.Resolves) ∨ p.1.result.ResolvesAlong i ps
+  | p :: ps => (p.1.issue = i ∧ p.1.Applicable a ∧ p.1.Delivers) ∨ p.1.result.ResolvesAlong i ps
 
-/-- 解決された。マージの履歴の中に、その時点の成果物でIssueを解決したPRがある。 -/
+/-- 解決された。マージの履歴の中に、その時点の成果物でIssueに応えて範囲を届けたPRがある。
+PRは承認されてマージされ、承認は範囲の変更を認めることでもあるので、範囲を変えていても解決とみなす。 -/
 def Repository.Resolved (s : Repository) (i : Issue) : Prop :=
   s.initial.ResolvesAlong i s.merged
 

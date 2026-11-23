@@ -4,7 +4,7 @@ import Knowledge.Development.Justification.Model
 
 namespace Knowledge.Development
 
-/-- 実装。中身は明かさない。 -/
+/-- 実装 -/
 opaque Implementation : Type
 
 /-- 振る舞い。成果物が何をするか。 -/
@@ -53,5 +53,13 @@ structure Artifact.ChangeRequest where
   rules : List Rule → List Rule
   /-- なぜこの変更をするか -/
   justification : Justification
+
+/-- 変更要件を当てた成果物。適用先 `a` に変更要件 `cr` を当て、実装を `is` にしたもの。 -/
+def Artifact.ChangeRequest.apply (cr : Artifact.ChangeRequest) (a : Artifact)
+    (is : List Implementation) : Artifact :=
+  { requirements := cr.requirements a.requirements
+    behaviors := cr.behaviors a.behaviors
+    implementations := is
+    rules := cr.rules a.rules }
 
 end Knowledge.Development
