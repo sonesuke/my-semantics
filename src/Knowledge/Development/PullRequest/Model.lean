@@ -11,7 +11,8 @@ namespace Knowledge.Development
 structure PullRequest.Body where
   /-- このPRが充足する変更要件。Issueの変更要件をPRで修正したものでもよい。 -/
   modification : Artifact.Modification
-  verifications : List Artifact.Verification
+  /-- 変更要件を満たすことの検証 -/
+  verification : Artifact.Verification
 
 /-- 要約。本文に依存する型なので、そのPRの本文の要約でしかあり得ない。 -/
 structure PullRequest.Summary (body : PullRequest.Body) where
@@ -24,7 +25,8 @@ structure PullRequest where
   diff : Artifact.Diff
   body : PullRequest.Body
   title : PullRequest.Summary body
-  ciResults : List Artifact.Verification
+  /-- CI結果は証拠として扱う -/
+  ciResults : List Evidence
 
 /-- 適用可能。差分の変更前が、適用先の成果物と一致する。 -/
 def PullRequest.Applicable (p : PullRequest) (a : Artifact) : Prop :=
@@ -38,8 +40,17 @@ def PullRequest.Amended (p : PullRequest) : Prop :=
 def PullRequest.Fulfills (p : PullRequest) : Prop :=
   p.body.modification.admits p.diff
 
-/-- 検証。CI結果も含める。 -/
-def PullRequest.verifications (p : PullRequest) : List Artifact.Verification :=
-  p.body.verifications ++ p.ciResults
+/-- 検証を通る -/
+def PullRequest.Verified (p : PullRequest) : Prop :=
+  p.body.verification.verified p.diff
+
+/-- 健全な検証を通るPRは、変更要件を充足する。 -/
+theorem PullRequest.fulfills_of_verified (p : PullRequest)
+    (hs : p.body.verification.Sound p.body.modification) (hv : p.Verified) : p.Fulfills :=
+  hs p.diff hv
+
+/-- 証拠。本文の検証の証拠とCI結果を合わせたもの。 -/
+def PullRequest.evidences (p : PullRequest) : List Evidence :=
+  p.body.verification.evidences ++ p.ciResults
 
 end Knowledge.Development
