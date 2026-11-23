@@ -1,5 +1,6 @@
 import Knowledge.Development.Artifact.Model
 import Knowledge.Development.Issue.Model
+import Knowledge.Development.Verification.Model
 
 /-! # PRのモデル
 
@@ -22,7 +23,7 @@ structure PullRequest.Body (base : Artifact) (is : List Implementation) where
   /-- 範囲。このPRが引き受ける変更要件。Issueの変更要件を変えたものでもよい。 -/
   scope : Artifact.ChangeRequest
   /-- 検証 -/
-  verification : Artifact.Verification ⟨base, scope.apply base is⟩
+  verification : Verification ⟨base, scope.apply base is⟩
   /-- 見積もり。既定路線のルールと実装の費用。既定路線の実装はないので、提案者が見積もる。 -/
   estimate : Nat
   /-- 実装の理由。実装の費用が見積もりを超えるとき、なぜ超えてよいか。 -/
