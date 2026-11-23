@@ -1,8 +1,6 @@
 config:
   default: true
   MD013: false # allow long lines (Japanese prose)
-  MD025: false # OKF bodies may have their own H1 alongside frontmatter `title`
-  MD041: false # concepts start with frontmatter
 globs:
   - "**/*.md"
 ignores:

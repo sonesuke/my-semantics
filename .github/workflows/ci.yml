@@ -11,5 +11,7 @@ jobs:
       - uses: DeterminateSystems/nix-installer-action@v23
       - name: Install dependencies
         run: nix develop --command npm ci
-      - name: Check formatting, lint and OKF bundle
+      - name: Check formatting and lint
         run: nix develop --command npm run check
+      - name: Build Lean and check proofs
+        run: nix develop --command lake build
