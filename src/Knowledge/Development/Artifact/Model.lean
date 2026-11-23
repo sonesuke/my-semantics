@@ -51,7 +51,7 @@ structure Artifact.ChangeRequest where
   requirements : List Requirement → List Requirement
   behaviors : List Behavior → List Behavior
   rules : List Rule → List Rule
-  /-- なぜこの変更をするか -/
+  /-- なぜこの変更を求めるか。差の正当化ではなく、要求の価値を述べる。 -/
   justification : Justification
 
 /-- 変更要件を当てた成果物。適用先 `a` に変更要件 `cr` を当て、実装を `is` にしたもの。 -/
