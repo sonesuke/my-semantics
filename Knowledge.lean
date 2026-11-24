@@ -7,13 +7,13 @@ import Knowledge.Development.Repository.Model
 import Knowledge.Development.Cost.Model
 import Knowledge.Development.Justification.Deviation
 import Knowledge.Development.Cost.Approval
+import Knowledge.Development.PullRequest.Document
 import Knowledge.Documentation.Document.Style.Model
 import Knowledge.Documentation.Document.Style.Diction
 import Knowledge.Documentation.Document.Style.Construction
 import Knowledge.Documentation.Document.Model
 import Knowledge.Documentation.Document.Genre.Proposal
 import Knowledge.Documentation.Document.Genre.Prep
-import Knowledge.Documentation.Document.Genre.PullRequest
 import Knowledge.Documentation.Document.Layout
 import Knowledge.Documentation.Reader.Model
 import Knowledge.Documentation.Reader.Theorems

@@ -1,13 +1,12 @@
 ---
 type: concept
 title: 文書の種類
-description: 提案書・PREP 法・PR など。節の役割と、取るべきレイアウトと文体を定める。文書を種類に従わせることが、読みやすくする戦略になる。
-tags: [documentation, genre, proposal, prep, pull-request]
+description: 提案書・PREP 法など。節の役割と、取るべきレイアウトと文体を定める。文書を種類に従わせることが、読みやすくする戦略になる。
+tags: [documentation, genre, proposal, prep]
 sources:
   - resource: ../Model.lean
   - resource: ./Proposal.lean
   - resource: ./Prep.lean
-  - resource: ./PullRequest.lean
 generated: { by: "claude/claude-opus-5-5", at: "2026-11-23T00:00:00Z" }
 ---
 
@@ -34,6 +33,4 @@ generated: { by: "claude/claude-opus-5-5", at: "2026-11-23T00:00:00Z" }
 
 PREP 法（`prep`）は、結論を先に示してから、理由と具体例で支持し、結論を繰り返す。結論は新しい語を導入せずに言い切り、理由はつながりを示し、具体例は具体的に書く。
 
-## PR
-
-PR（`pullRequest`）は、レビュアーに承認するかを判断してもらう文書。要約・範囲・変更・検証・逸脱の理由・判断してほしいことの順に並べ、逸脱の理由は逸脱があるときだけ置く。承認したら何を受け入れたことになるかを、範囲・変更・検証で過不足なく書く。開発の PR のモデル（[PR](../../../Development/PullRequest/pull-request.md)）を、文書として読みやすく並べたものにあたる。
+開発の PR の文書の種類は、開発の知識に置く（[PR](../../../Development/PullRequest/pull-request.md)）。

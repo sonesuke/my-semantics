@@ -4,5 +4,5 @@
 
 - [文書](./Document/document.md) — 内容・レイアウト・文書の種類
 - [文体](./Document/Style/style.md) — 言葉遣いと文の組み立て
-- [文書の種類](./Document/Genre/genre.md) — 提案書・PREP 法・PR
+- [文書の種類](./Document/Genre/genre.md) — 提案書・PREP 法
 - [読者](./Reader/reader.md) — 読む過程、理解までの距離、種類への期待
