@@ -62,7 +62,7 @@ theorem prefers_of_cost_sub (e e' : Document) (ε : Nat) (hε : 0 < ε)
 
 /-- 種類に従う文書は、期待からの逸脱の費用がかからない。 -/
 theorem genreCost_eq_zero_of_conforms (e : Document) (h : e.Conforms) : R.genreCost e = 0 := by
-  simp [Reader.genreCost, Document.deviationCount_eq_zero_of_conforms e h]
+  simp [Reader.genreCost, h]
 
 /-- 種類に従う文書は、同じ読み方ができる逸脱した文書より、距離が大きくない。 -/
 theorem distanceLe_of_conforms (e e' : Document) (h : e.Conforms)
@@ -73,17 +73,17 @@ theorem distanceLe_of_conforms (e e' : Document) (h : e.Conforms)
   omega
 
 /-- 種類を期待する読者にとって、種類に従う文書は、同じ読み方ができる逸脱した文書より距離が小さい。
-逸脱一つあたりの費用が正で、逸脱が一つでもあれば、その分だけ遠くなる。 -/
+種類に従わないときの費用が正で、種類に従っていなければ、その分だけ遠くなる。 -/
 theorem distanceLt_of_conforms (e e' : Document) (h : e.Conforms)
     (hp : ∀ p, R.Successful e' p ↔ R.Successful e p) (hr : R.Reachable e)
-    (hexp : R.expects e'.genre) (hsur : 0 < R.surprise) (hdev : 0 < e'.deviationCount) :
+    (hexp : R.expects e'.genre) (hsur : 0 < R.surprise) (hdev : ¬e'.Conforms) :
     R.DistanceLt e e' := by
   obtain ⟨n, ⟨p, hs, hn⟩, hmin⟩ := Nat.exists_least (R.Within e) hr
   refine ⟨n, ⟨p, hs, hn⟩, ?_⟩
   intro ⟨q, hq, hqn⟩
   have hg : 0 < R.genreCost e' := by
-    simp only [Reader.genreCost, hexp, ite_true]
-    exact Nat.mul_pos hsur hdev
+    simp only [Reader.genreCost, hexp, hdev, not_false_eq_true, and_self, ite_true]
+    exact hsur
   have h0 := R.genreCost_eq_zero_of_conforms e h
   have hw : R.Within e (R.cost R.initial q) :=
     ⟨q, (hp q).mp hq, by simp only [Reader.totalCost, h0]; omega⟩

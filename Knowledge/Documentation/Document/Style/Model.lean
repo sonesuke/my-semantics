@@ -1,36 +1,17 @@
+import Knowledge.Documentation.Document.Style.Diction
+import Knowledge.Documentation.Document.Style.Construction
+
 /-! # 文体のモデル
 
-文体は、文書がどう書かれているか。どう並べるか（レイアウト）とは別に、各節が持つ。
-言葉遣い（どの語を選ぶか）と文の組み立て（文をどう作るか）からなる。 -/
+文体は、節がどう書かれているか。節全体の言葉遣い（どの語を選ぶか）と、文の並び（文ごとの組み立て）からなる。
+文体の性質は、それぞれ言葉遣いと文の組み立ての側に置き、文体はその二つを組にするだけにする。 -/
 
 namespace Knowledge.Documentation
 
-/-- 語 -/
-opaque Word : Type
-
-/-- 言葉遣い。語の選び方。 -/
-opaque Diction : Type
-
-/-- 使っている語。読者の語彙と照らして、未知の語を見つけるために取り出す。 -/
-opaque Diction.words : Diction → List Word
-
-/-- 新しく導入する語。その節で初めて持ち込み、意味を示す語。 -/
-opaque Diction.introduces : Diction → List Word
-
-/-- 文の組み立て。文の長さ、構文、語順など。 -/
-opaque Construction : Type
-
-/-- 文体。言葉遣いと文の組み立て。 -/
+/-- 文体。節全体の言葉遣いと、文の並び。言葉遣いの性質（具体的、新しい語を導入しない）は節全体で見るので
+一つにし、組み立ては文ごとに違うので文の数だけ持つ。 -/
 structure Style where
-  diction : Diction            -- 言葉遣い
-  construction : Construction  -- 文の組み立て
-
-/-- 文体が使っている語 -/
-def Style.words (s : Style) : List Word :=
-  s.diction.words
-
-/-- 文体が新しく導入する語 -/
-def Style.introduces (s : Style) : List Word :=
-  s.diction.introduces
+  diction : Diction       -- 言葉遣い：節全体の語の選び方
+  sentences : Sentences   -- 文の並び：文ごとの組み立て
 
 end Knowledge.Documentation

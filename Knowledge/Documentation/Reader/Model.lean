@@ -24,6 +24,10 @@ structure Mind where
 /-- 目的。読後にできるようになってほしいこと。説明の再生に加え、新しい事例の判断や反例の識別を含む。 -/
 opaque Purpose : Type
 
+/-- `g.Needs t` は「目的 `g` を果たすには、話題 `t` について答えが要る」。
+話題は読む人が答えを知りたい問いなので、どの問いに答えが要るかは目的が決める。 -/
+opaque Purpose.Needs : Purpose → Topic → Prop
+
 /-- 操作。読む、調べる、前に戻る、推論するなど。 -/
 opaque Operation : Type
 
@@ -41,7 +45,7 @@ structure Reader where
   step : Document → Mind → Operation → Mind → Prop  -- step e K o K'：文書 e を読み、操作 o で頭の中が K から K' に変わる
   stepCost : Mind → Operation → Mind → Nat          -- 操作一回の費用
   expects : Genre → Prop                            -- 知っている文書の種類
-  surprise : Nat                                    -- 期待からの逸脱一つあたりの費用
+  surprise : Nat                                    -- 知っている種類に従わない文書を読むときの費用
   successProbability : Document → Rat               -- 成功確率
 
 namespace Reader
@@ -51,6 +55,11 @@ variable (R : Reader)
 /-- 理解している。すべての目的について十分に応答できる。判定は目的の範囲に限る。 -/
 def Understands (K : Mind) : Prop :=
   ∀ g ∈ R.purposes, R.sufficient K g
+
+/-- 内容が目的に足りる。読者のどの目的についても、それが求める話題の事柄が内容にある。
+求める話題の事柄がなければ、どう並べてどう書いても、その目的は果たせない。 -/
+def Serves (c : Content) : Prop :=
+  ∀ g ∈ R.purposes, ∀ t, g.Needs t → ∃ p ∈ c.points, c.topic p = t
 
 /-! ## 過程 -/
 
@@ -73,9 +82,9 @@ def cost : Mind → Process → Nat
   | K, (o, K') :: ps => R.stepCost K o K' + cost K' ps
 
 open Classical in
-/-- 期待からの逸脱の費用。知っている種類の文書を読むとき、逸脱の数だけかかる。知らない種類なら期待がないのでかからない。 -/
+/-- 期待からの逸脱の費用。知っている種類の文書を読むとき、種類に従っていなければかかる。知らない種類なら期待がないのでかからない。 -/
 noncomputable def genreCost (e : Document) : Nat :=
-  if R.expects e.genre then R.surprise * e.deviationCount else 0
+  if R.expects e.genre ∧ ¬e.Conforms then R.surprise else 0
 
 /-- 読む費用。読む過程の費用に、期待からの逸脱の費用を加えたもの。 -/
 noncomputable def totalCost (e : Document) (p : Process) : Nat :=
