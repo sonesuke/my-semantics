@@ -1,5 +1,3 @@
-import Knowledge.Documentation.Document.Style.Model
-
 /-! # 内容のモデル
 
 内容は、何を伝えるか。どう並べるか（レイアウト）やどう書くか（文体）とは独立に決まる。 -/
@@ -9,12 +7,13 @@ namespace Knowledge.Documentation
 /-- 事柄。結論、理由、条件、具体例など、伝えたい一つのこと。 -/
 opaque Point : Type
 
-/-- 内容。伝えたい事柄と、事柄どうしの前提関係。 -/
-structure Content where
-  points : List Point           -- 伝えたい事柄
-  needs : Point → Point → Prop  -- needs p q：事柄 p の理解に、事柄 q が必要
+/-- 話題。事柄が何についての話か。読む人が答えを知りたい問いにあたる。話題どうしは名前で区別する。 -/
+structure Topic where
+  name : String  -- 名前
 
-/-- `s.Conveys p` は「文体 `s` で書いた節が、事柄 `p` を伝える」。言い換えで条件や留保が落ちれば伝わらない。 -/
-opaque Style.Conveys : Style → Point → Prop
+/-- 内容。伝えたい事柄と、それぞれが何についての話か。 -/
+structure Content where
+  points : List Point     -- 伝えたい事柄
+  topic : Point → Topic   -- 事柄ごとの話題
 
 end Knowledge.Documentation

@@ -11,10 +11,12 @@ import Knowledge.Development.PullRequest.Document
 import Knowledge.Documentation.Document.Style.Model
 import Knowledge.Documentation.Document.Style.Diction
 import Knowledge.Documentation.Document.Style.Construction
+import Knowledge.Documentation.Document.Role
+import Knowledge.Documentation.Document.Section
+import Knowledge.Documentation.Document.Genre.Model
 import Knowledge.Documentation.Document.Model
 import Knowledge.Documentation.Document.Genre.Proposal
 import Knowledge.Documentation.Document.Genre.Prep
-import Knowledge.Documentation.Document.Layout
 import Knowledge.Documentation.Reader.Model
 import Knowledge.Documentation.Reader.Theorems
 import Knowledge.Documentation.Document.Content
